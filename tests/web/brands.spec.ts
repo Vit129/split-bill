@@ -10,15 +10,6 @@ test('[FE-IT] sushi screen lists all five brands with their plates', async ({ pa
   await expect(page.locator('.plate-row')).toHaveCount(7);
 });
 
-test('[FE-IT] split: choosing Hama fills its item presets and sets VAT-included rates', async ({ page }) => {
-  await page.goto('/#split');
-  await page.evaluate(() => localStorage.clear());
-  await page.reload();
-  await page.waitForSelector('#split-root .card');
-  await page.locator('#split-root [data-split-action="source"][data-value="hama"]').click();
-  await expect(page.locator('#split-root .chip').first()).toContainText('เครื่องดื่มรีฟิล');
-});
-
 test('[FE-IT] split: Katsu Midori plate table shows all 12 patterns on the sushi screen', async ({ page }) => {
   await page.goto('/#sushi');
   await page.waitForSelector('.plate-row');

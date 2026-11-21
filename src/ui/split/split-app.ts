@@ -2,7 +2,6 @@
 // collide with the sushi screen's delegated handlers.
 import { STRINGS } from '../../strings/th.ts';
 import { BILL_PRESETS } from '../../config/bill-presets.ts';
-import { BRANDS, type BrandId } from '../../config/brands.ts';
 import { defaultSplitData, loadSplit, saveSplit, type SplitData } from '../../integrations/split-storage.ts';
 import { computeSplit, type Category, type SplitItem, type TaxRule } from '../../logic/split.ts';
 import { evaluateExpression } from '../../logic/expr.ts';
@@ -35,7 +34,6 @@ function freshData(): SplitData {
 
 function freshUi(d: SplitData): SplitUi {
   return {
-    source: 'general',
     category: 'food',
     rule: 'bill',
     payers: d.people.map((p) => p.id),
@@ -147,27 +145,6 @@ function setSettings(patch: Partial<SplitData['settings']>): void {
   commit();
 }
 
-// "general" or one item brand. An item brand sets the bill rates to match its menu.
-function chooseSource(value: string | undefined): void {
-  if (value === undefined || value === 'general') {
-    ui = { ...ui, source: 'general' };
-    render();
-    return;
-  }
-  const id = value as BrandId;
-  const brand = BRANDS[id];
-  if (!brand) return;
-  const plus = brand.taxType === 'plus_plus';
-  ui = { ...ui, source: id };
-  setSettings({ scRate: 10, vatRate: plus ? 7 : 0, compound: plus });
-}
-
-// Opening #split=<brand> from the sushi screen selects that brand's menu.
-function applyHash(): void {
-  const m = /^#split=([a-z]+)$/.exec(window.location.hash);
-  if (m && m[1]) chooseSource(m[1]);
-}
-
 const clickActions: Record<string, (el: HTMLElement) => void> = {
   'clear-open': () => { ui = { ...ui, clearConfirm: true }; render(); },
   'clear-cancel': () => { ui = { ...ui, clearConfirm: false }; render(); },
@@ -191,21 +168,10 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
     ui = { ...ui, rule };
     render();
   },
-  source(el) {
-    chooseSource(el.dataset['value']);
-  },
   preset(el) {
-    const index = Number(el.dataset['index']);
-    if (ui.source === 'general') {
-      const preset = BILL_PRESETS[ui.category][index];
-      if (!preset) return;
-      ui = { ...ui, nameDraftItem: txt(preset.key), priceDraft: String(preset.price), rule: preset.rule, itemError: '' };
-    } else {
-      const preset = BRANDS[ui.source].presets[index];
-      if (!preset) return;
-      const text = STRINGS[preset.textKey as keyof typeof STRINGS] as unknown as { name: string };
-      ui = { ...ui, nameDraftItem: text.name, priceDraft: String(preset.price), rule: 'bill', itemError: '' };
-    }
+    const preset = BILL_PRESETS[ui.category][Number(el.dataset['index'])];
+    if (!preset) return;
+    ui = { ...ui, nameDraftItem: txt(preset.key), priceDraft: String(preset.price), rule: preset.rule, itemError: '' };
     render();
   },
   payer(el) {
@@ -332,5 +298,3 @@ splitRoot.addEventListener('submit', (event) => {
 
 render();
 
-window.addEventListener('hashchange', applyHash);
-applyHash();
