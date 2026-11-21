@@ -1,0 +1,30 @@
+src/ui/shell.ts
+  s_1d58f7832d7b65::t_b328e798bc9352 1-2,12-15,17,26-29,34-37,43
+tests/web/menu.spec.ts
+  s_1d58f7832d7b65::t_f95dbb69f0f1e6 3,6,11
+tests/web/menu-resilience.spec.ts
+  s_1d58f7832d7b65::t_f95dbb69f0f1e6 3-4,13-14
+tests/web/layout.spec.ts
+  s_1d58f7832d7b65::t_f95dbb69f0f1e6 24
+index.html
+  s_1d58f7832d7b65::t_b328e798bc9352 15-18
+src/ui/styles.css
+  s_1d58f7832d7b65::t_824cc98de25320 65
+  s_1d58f7832d7b65::t_f95dbb69f0f1e6 154,195-198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "d524e90ef819e4436b5e5141ad879618634a7f03",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
