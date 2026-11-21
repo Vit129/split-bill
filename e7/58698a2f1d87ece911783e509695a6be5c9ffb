@@ -1,0 +1,77 @@
+tests/billing.test.ts
+  s_1d58f7832d7b65::t_7475b9836c8d98 1-103
+vite.config.ts
+  s_1d58f7832d7b65::t_0aa467a475c0a9 1-7
+tests/share-code.test.ts
+  s_1d58f7832d7b65::t_0495ccdc908973 1-16
+src/logic/share-code.ts
+  s_1d58f7832d7b65::t_f02201a99d8c9c 1-33
+ARCHITECTURE.md
+  s_1d58f7832d7b65::t_6ed5fed80d5e98 10-15,34,48-49
+src/logic/money.ts
+  s_1d58f7832d7b65::t_4c707aedea3c86 1-35
+tsconfig.json
+  s_1d58f7832d7b65::t_0aa467a475c0a9 1-16
+src/logic/view-model.ts
+  s_1d58f7832d7b65::t_9a6394fdaa7374 1-160
+src/integrations/storage.ts
+  s_1d58f7832d7b65::t_055ab75cf12975 1-27
+src/config/brands.ts
+  s_1d58f7832d7b65::t_dd03348bd8b926 5-40
+src/ui/render.ts
+  s_1d58f7832d7b65::t_c4546fb6b35057 197-199
+  s_1d58f7832d7b65::t_c7b6662226186b 1-196,200-352
+src/ui/app.ts
+  s_1d58f7832d7b65::t_24c5789b203a90 1-456,477-492
+  s_1d58f7832d7b65::t_bce378d23258ca 461-466,471-472,474
+  s_1d58f7832d7b65::t_5ab3fa2378f900 457-460,467-470,473,475-476
+src/strings/th.ts
+  s_1d58f7832d7b65::t_a6f34591deca12 1-224
+src/logic/escape.ts
+  s_1d58f7832d7b65::t_61bdd4b2ed2a89 1-4
+.github/workflows/pages.yml
+  s_1d58f7832d7b65::t_9d8535e156ae55 25
+tests/architecture-guard.test.ts
+  s_1d58f7832d7b65::t_f718d5bef69217 1-98
+index.html
+  s_1d58f7832d7b65::t_0aa467a475c0a9 11
+tests/cells.test.ts
+  s_1d58f7832d7b65::t_2645c4ed5d27c0 1-66
+src/logic/bill-text.ts
+  s_1d58f7832d7b65::t_40b1e061005168 1-39
+src/logic/billing.ts
+  s_1d58f7832d7b65::t_fbfb4ddb4f966f 1-127
+package.json
+  s_1d58f7832d7b65::t_bbfab4af52966d 8-13,16
+  s_1d58f7832d7b65::t_1317c2b44422b5 17-21
+tests/fixtures/billing.fixtures.ts
+  s_1d58f7832d7b65::t_329cbf85624528 1-27
+README.md
+  s_1d58f7832d7b65::t_6ed5fed80d5e98 29
+  s_1d58f7832d7b65::t_29f87301a888ff 8-10,43
+src/logic/cells.ts
+  s_1d58f7832d7b65::t_799fd01a5023f5 1-219
+CLAUDE.md
+  s_1d58f7832d7b65::t_6ed5fed80d5e98 7-9
+  s_1d58f7832d7b65::t_29f87301a888ff 3,5
+src/integrations/peer-sync.ts
+  s_1d58f7832d7b65::t_9c7dcff66e4ccc 1-123
+package-lock.json
+  s_1d58f7832d7b65::t_70e378843e51b5 1-1320
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "e758698a2f1d87ece911783e509695a6be5c9ffb",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
