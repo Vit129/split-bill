@@ -33,7 +33,6 @@ function freshData(): SplitData {
 function freshUi(d: SplitData): SplitUi {
   return {
     category: 'food',
-    payers: d.people.map((p) => p.id),
     editing: null,
     expanded: [],
     clearConfirm: false,
@@ -85,11 +84,6 @@ function saveItem(): void {
     render();
     return;
   }
-  if (ui.payers.length === 0) {
-    ui = { ...ui, itemError: txt('BILL_NEED_PAYER') };
-    render();
-    return;
-  }
   const qty = Math.min(99, Math.max(1, Number.parseInt(ui.qtyDraft, 10) || 1));
   const name = ui.nameDraftItem.trim() || txt('BILL_CAT_FOOD');
   const item: SplitItem = {
@@ -98,7 +92,7 @@ function saveItem(): void {
     name: name.slice(0, 60),
     unitSatang: Math.round(price * 100),
     qty,
-    payers: [...ui.payers],
+    payers: ui.editing ? (data.items.find((i) => i.id === ui.editing)?.payers ?? []) : [],
   };
   if (ui.editing) {
     data = { ...data, items: data.items.map((i) => (i.id === item.id ? item : i)) };
@@ -121,7 +115,7 @@ function addPerson(): void {
   }
   const id = randomId('sp');
   data = { ...data, people: [...data.people, { id, name, paid: false }] };
-  ui = { ...ui, nameDraft: '', nameError: '', payers: [...ui.payers, id] };
+  ui = { ...ui, nameDraft: '', nameError: '' };
   commit();
 }
 
@@ -131,7 +125,7 @@ function removePerson(id: string): void {
     people: data.people.filter((p) => p.id !== id),
     items: data.items.map((i) => ({ ...i, payers: i.payers.filter((x) => x !== id) })),
   };
-  ui = { ...ui, payers: ui.payers.filter((x) => x !== id), expanded: ui.expanded.filter((x) => x !== id) };
+  ui = { ...ui, expanded: ui.expanded.filter((x) => x !== id) };
   commit();
 }
 
@@ -169,14 +163,19 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
     ui = { ...ui, nameDraftItem: txt(preset.key), priceDraft: String(preset.price), itemError: '' };
     render();
   },
-  payer(el) {
-    const id = el.dataset['id'] ?? '';
-    const payers = ui.payers.includes(id) ? ui.payers.filter((x) => x !== id) : [...ui.payers, id];
-    ui = { ...ui, payers, itemError: '' };
-    render();
+  'item-payer'(el) {
+    const itemId = el.dataset['item'] ?? '';
+    const personId = el.dataset['id'] ?? '';
+    data = {
+      ...data,
+      items: data.items.map((i) => {
+        if (i.id !== itemId) return i;
+        const payers = i.payers.includes(personId) ? i.payers.filter((x) => x !== personId) : [...i.payers, personId];
+        return { ...i, payers };
+      }),
+    };
+    commit();
   },
-  'payers-all'() { ui = { ...ui, payers: data.people.map((p) => p.id) }; render(); },
-  'payers-clear'() { ui = { ...ui, payers: [] }; render(); },
   'item-edit'(el) {
     const item = data.items.find((i) => i.id === el.dataset['id']);
     if (!item) return;
@@ -184,7 +183,6 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
       ...ui,
       editing: item.id,
       category: item.category,
-      payers: [...item.payers],
       nameDraftItem: item.name,
       priceDraft: String(item.unitSatang / 100),
       qtyDraft: String(item.qty),

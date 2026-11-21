@@ -14,7 +14,6 @@ const baht = (satang: number): string => formatBaht(satang);
 
 export interface SplitUi {
   category: Category;
-  payers: string[];
   editing: string | null;
   expanded: string[];
   clearConfirm: boolean;
@@ -119,15 +118,6 @@ function itemFormCard(data: SplitData, ui: SplitUi): string {
           <input class="input" type="number" min="1" max="99" value="${esc(ui.qtyDraft)}" data-split-draft="qty"></label>
       </div>
       ${ui.itemError ? `<p class="level-over small">${esc(ui.itemError)}</p>` : ''}
-      <p class="label">${esc(txt('BILL_PAYERS'))} <span class="muted small">${esc(txt('BILL_PAYERS_HINT'))}</span></p>
-      <div class="chips">
-        ${data.people.map((p) => `<button type="button" class="chip${ui.payers.includes(p.id) ? ' is-active' : ''}"
-          data-split-action="payer" data-id="${esc(p.id)}" aria-pressed="${ui.payers.includes(p.id)}">${esc(p.name)}</button>`).join('')}
-      </div>
-      <div class="row-gap">
-        <button type="button" class="btn btn-soft small" data-split-action="payers-all">${esc(txt('BILL_SELECT_ALL'))}</button>
-        <button type="button" class="btn btn-soft small" data-split-action="payers-clear">${esc(txt('BILL_CLEAR_PAYERS'))}</button>
-      </div>
       <button class="btn btn-primary full" type="submit">${esc(editing ? txt('BILL_SAVE_ITEM') : txt('BILL_ADD_ITEM'))}</button>
     </form>
   </section>`;
@@ -146,14 +136,16 @@ function itemsCard(data: SplitData, ui: SplitUi): string {
 }
 
 function itemRow(it: SplitItem, data: SplitData, ui: SplitUi): string {
-  const payerNames = it.payers.map((id) => data.people.find((p) => p.id === id)?.name).filter((n): n is string => Boolean(n));
-  const payerText = payerNames.length > 0 ? payerNames.join(', ') : txt('BILL_ITEM_NO_PAYER');
   const total = it.unitSatang * it.qty;
+  const eaters = data.people.map((p) => `<button type="button" class="chip${it.payers.includes(p.id) ? ' is-active' : ''}"
+      data-split-action="item-payer" data-item="${esc(it.id)}" data-id="${esc(p.id)}" aria-pressed="${it.payers.includes(p.id)}">${esc(p.name)}</button>`).join('');
   return `<div class="item-row${ui.editing === it.id ? ' is-editing' : ''}">
     <div class="item-main">
       <strong>${esc(it.name)}</strong>${it.qty > 1 ? ` <span class="pill">× ${it.qty}</span>` : ''}
       <span class="pill">${esc(txt(RULE_KEYS[data.settings.categoryRules[it.category]]))}</span>
-      <div class="muted small">${esc(payerText)}</div>
+      <div class="muted small">${esc(txt('BILL_EATERS'))}</div>
+      <div class="chips">${eaters}</div>
+      ${it.payers.length === 0 ? `<div class="level-warn small">${esc(txt('BILL_ITEM_NO_PAYER'))}</div>` : ''}
     </div>
     <div class="item-side">
       <span class="tabular">${baht(total)}</span>

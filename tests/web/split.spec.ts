@@ -14,11 +14,18 @@ test('[FE-IT] split: the default two people and a 599 ฿ buffet give 705.02 ฿
   await expect(page.locator('#split-root .person .amt')).toHaveText(['฿352.51', '฿352.51']);
 });
 
-test('[FE-IT] split: an item with no payer chosen is rejected', async ({ page }) => {
-  await page.locator('#split-root [data-split-action="payers-clear"]').click();
-  await page.locator('#split-root [data-split-draft="price"]').fill('100');
+test('[FE-IT] split: an item added without eaters is flagged on its row and on the summary', async ({ page }) => {
+  await page.locator('#split-root [data-split-action="preset"][data-index="0"]').click();
   await page.locator('#split-root form[data-split-form="item"] button[type="submit"]').click();
-  await expect(page.locator('#split-root .level-over')).toHaveText('เลือกคนจ่ายอย่างน้อย 1 คน');
+  await expect(page.locator('#split-root .item-row .level-warn').first()).toHaveText('ยังไม่ระบุคนจ่าย');
+  await expect(page.locator('#split-root .summary-card .level-warn')).toHaveCount(1);
+});
+
+test('[FE-IT] split: tapping a name on the item row makes that person the only eater', async ({ page }) => {
+  await page.locator('#split-root [data-split-action="preset"][data-index="0"]').click();
+  await page.locator('#split-root form[data-split-form="item"] button[type="submit"]').click();
+  await page.locator('#split-root .item-row [data-split-action="item-payer"]').first().click();
+  await expect(page.locator('#split-root .person .amt')).toHaveText(['฿705.02', '฿0.00']);
 });
 
 test('[FE-IT] split: a bad price expression is rejected, not evaluated', async ({ page }) => {
