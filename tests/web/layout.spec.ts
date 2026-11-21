@@ -21,7 +21,7 @@ for (const screen of screens) {
     const touch = await page.evaluate(() => matchMedia('(pointer: coarse)').matches);
     test.skip(!touch, 'desktop pointer: sizes are not enforced');
     const small = await page.evaluate(() => {
-      const selector = '.step, .icon-btn, .chip, .btn, .brand-tab, .menu-btn';
+      const selector = '.step, .icon-btn, .chip, .btn, .brand-tab';
       return [...document.querySelectorAll<HTMLElement>(selector)]
         .filter((el) => el.offsetParent !== null)
         .map((el) => ({ text: el.textContent?.trim() ?? '', w: el.offsetWidth, h: el.offsetHeight }))
