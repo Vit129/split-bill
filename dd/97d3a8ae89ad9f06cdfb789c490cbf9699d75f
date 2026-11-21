@@ -1,0 +1,54 @@
+tests/split.test.ts
+  s_1d58f7832d7b65::t_39170abe64478d 78-80
+  s_1d58f7832d7b65::t_86b429a6fab2ee 1-77,81
+src/ui/split/split-render.ts
+  s_1d58f7832d7b65::t_3f96391eddcd00 11-12,79,232,243
+  s_1d58f7832d7b65::t_ecff200af4f05f 167-168
+  s_1d58f7832d7b65::t_ad251516b5e3c7 1-10,13-78,80-166,169-231,233-242,244-270
+src/logic/expr.ts
+  s_1d58f7832d7b65::t_1f4241635fe188 1-88
+src/strings/th.ts
+  s_1d58f7832d7b65::t_df08a19dbd6a8a 224-309
+  s_1d58f7832d7b65::t_ecff200af4f05f 310-311
+  s_1d58f7832d7b65::t_0db06d47f9cb35 312-324
+src/ui/split/split-app.ts
+  s_1d58f7832d7b65::t_56a7a79b35dcbb 1-299
+src/ui/shell.ts
+  s_1d58f7832d7b65::t_583d5e66687a30 1-64
+src/config/features.ts
+  s_1d58f7832d7b65::t_1a5814c828f035 1-2
+index.html
+  s_1d58f7832d7b65::t_92d7f5936595cf 11,14-28
+src/ui/app.ts
+  s_1d58f7832d7b65::t_8379a891f14b54 14,97,363
+src/logic/split-text.ts
+  s_1d58f7832d7b65::t_32b47505e9b07e 1-26
+src/logic/split.ts
+  s_1d58f7832d7b65::t_09fc46203209b7 1-157
+src/config/bill-presets.ts
+  s_1d58f7832d7b65::t_a32bd6d6f0cc9f 1-30
+src/ui/render.ts
+  s_1d58f7832d7b65::t_8379a891f14b54 6,57
+src/ui/styles.css
+  s_1d58f7832d7b65::t_92d7f5936595cf 136-175
+src/integrations/split-storage.ts
+  s_1d58f7832d7b65::t_dcabb1a597a6d3 1-52
+README.md
+  s_1d58f7832d7b65::t_7bf38be47aa33c 18,51-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "dd97d3a8ae89ad9f06cdfb789c490cbf9699d75f",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
