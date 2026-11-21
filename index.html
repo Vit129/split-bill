@@ -12,14 +12,12 @@
 </head>
 <body>
   <header class="shell">
-    <button id="menu-btn" class="menu-btn" type="button" aria-expanded="false" aria-controls="menu">☰</button>
-    <span id="shell-title" class="shell-title"></span>
+    <nav class="tabs" role="tablist" aria-label="Screens">
+      <button id="tab-sushi" class="tab" type="button" role="tab" data-screen="sushi" aria-selected="false"></button>
+      <button id="tab-split" class="tab" type="button" role="tab" data-screen="split" aria-selected="false"></button>
+    </nav>
     <span id="app-version" class="app-version"></span>
   </header>
-  <nav id="menu" class="menu" hidden>
-    <button type="button" data-screen="sushi"></button>
-    <button type="button" data-screen="split"></button>
-  </nav>
   <div id="sushi-screen">
     <div id="app"></div>
     <div id="modal-root"></div>
