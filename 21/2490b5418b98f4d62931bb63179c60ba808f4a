@@ -1,0 +1,27 @@
+src/strings/th.ts
+  s_1d58f7832d7b65::t_517733d4eeb77b 266-269
+tests/split.test.ts
+  s_1d58f7832d7b65::t_517733d4eeb77b 8,39-41,54,62
+src/logic/split.ts
+  s_1d58f7832d7b65::t_517733d4eeb77b 7,62-63,65-68
+src/ui/split/split-render.ts
+  s_1d58f7832d7b65::t_517733d4eeb77b 35-46,153,172
+src/integrations/split-storage.ts
+  s_1d58f7832d7b65::t_517733d4eeb77b 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "212490b5418b98f4d62931bb63179c60ba808f4a",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
