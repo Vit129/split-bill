@@ -1,0 +1,22 @@
+scripts/start.js
+  s_1d58f7832d7b65::t_63c2633fa6af0c 30-31
+  s_1d58f7832d7b65::t_85eb438838d386 1-29,32-100
+package.json
+  s_1d58f7832d7b65::t_c0171e2b804d39 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "1a986f03f901cc292ca19f584cfdbb9ba50e7f34",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
