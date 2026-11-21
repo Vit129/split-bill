@@ -1,8 +1,8 @@
 {
-  "name": "kaiten-sushi-calc",
+  "name": "split-bill",
   "version": "0.1.0",
   "private": true,
-  "description": "Kaiten sushi bill calculator with copy-paste device sync (no server)",
+  "description": "Bill calculator for Thai restaurants: plates or items, SC and VAT, split per person",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,55 +1,68 @@
-# Kaiten Sushi Calc
+# split-bill
 
-Bill calculator for conveyor-belt sushi in Thailand. Counts plates, adds extras, discount, service charge (SC) and VAT, then splits the bill equally or per person. Two phones can share a table with copy-paste codes; no server.
+A bill calculator for eating out in Thailand. It works out who owes what, with service charge (SC) and VAT handled the way Thai restaurants bill them.
 
-## Run
-
-```bash
-npm run dev        # http://localhost:5173 (Vite dev server)
-npm run build      # tests + typecheck + static build into dist/
-npm test           # headless tests incl. architecture guard (Node 22.18+ runs .ts directly)
-```
-
-## Use
-
-- **หารเท่ากัน / แยกตามคน**: equal split of the whole table, or count plates per person.
-- **กองกลาง**: shared plates or extras split equally among everyone.
-- **ส่วนลด**: spread across people in proportion to what each ate, so nobody goes negative.
-- **แชร์โต๊ะ (ปิดอยู่)**: ซ่อนไว้ตั้งแต่รอบนี้ เปิดกลับได้ที่ `src/config/features.ts`. รายละเอียดเดิม: host creates an invite code, guest pastes it and sends back a reply code, host pastes the reply. Then both sides sync automatically. Works on the same Wi-Fi; some mobile carriers (strict NAT) may fail.
-- **คัดลอกสรุปส่ง LINE**: copies a text summary.
-- Undo is intentionally not provided.
-
-## Tax rules
-
-- `vat_included` brands (Sushiro, Hama, Genki in the data): total = price × 1.10 (SC 10% on top, VAT already inside the price).
-- `plus_plus` brands (Katsu Midori, Ginza Onodera): total = price × 1.10 × 1.07 = × 1.177. This matches the Thai practice found on [Thai-language tax guidance](https://www.rd.go.th/49016.html) and worked examples (100 → 117.70). Verified against the search results on 2026-11-21; the RD ruling itself was not opened.
-
-## Brand data: verification status (checked 2026-11-21)
-
-Every brand is marked `unverified` in `src/config/brands.ts`, and the app shows a warning banner. Search results found:
-
-| Brand | Found | Not confirmed |
-|---|---|---|
-| Sushiro | Plate prices from 40 to 120 ฿ ([Thairath](https://en.thairath.co.th/money/business_marketing/business_strategy/2908264), [Bangkok Post](https://www.bangkokpost.com/life/social-and-lifestyle/2104267/sushi-expressway)) | White plate 30 vs 60 ฿, black 100 vs 120 ฿ conflict between sources |
-| Hama Sushi | Opened at Central Pinklao, plates from 40 ฿ ([Brand Inside](https://brandinside.asia/?p=239488)) | Plate colours and prices |
-| Katsu Midori | Range 40–180 ฿ in a Feb 2026 review ([Wongnai](https://www.wongnai.com/restaurants/2916357Ds-katsu-midori-thailand-centralworld/reviews)) | Colours; the old code's 40–150 ฿ range does not match |
-| Ginza Onodera | First Thai branch at CentralWorld; from 40 ฿, premium 100–300 ฿ ([Kaohoon](https://www.kaohooninternational.com/?p=586907)) | Colours; the old code's 80–380 ฿ range does not match |
-| Genki Sushi | Exists in Thailand (CentralWorld) ([Wongnai](https://www.wongnai.com/articles/genki-sushi)) | Any price or colour |
-
-Reliable prices need a photo of the current menu or a receipt from each branch.
-
-## Verified
-
-- 28/28 headless tests pass (`npm test`); typecheck clean (`npm run typecheck`).
-- Browser smoke (headless Chromium, 390 px and desktop): renders with no console errors; brand switch; person mode; discount 40 with one red plate → 0.00 ฿; no horizontal overflow on a phone-sized screen.
-- Two-browser sync (separate contexts): offline counts merged to 132.00 ฿ on both sides (red 40 + gold 80, +10% SC); no duplicate people; live edit propagated (165.00 ฿ on both).
-- Not tested on two real phones over mobile data.
-
-## Files
-
-See `ARCHITECTURE.md` for the layer map and data model.
+It runs entirely in the browser. There is no server and no account, and nothing you enter leaves your device.
 
 ## Screens
 
-- **ซูชิ (นับจาน)**: pick a brand and count plates per person.
-- **หารบิล & คิดเงิน**: items with payers, per-item tax rules, discount before SC/VAT, and per-person paid status. Opened from the ☰ menu (`#split`).
+- **Sushi (count plates):** tap plate colours per person for conveyor-belt sushi. Each brand has its own plate prices and tax type.
+- **Split bill (items):** add items by category, tap who ate each one, then set SC and VAT for the whole bill. Discounts come off before SC and VAT are charged.
+
+Open the menu (☰) to switch between them.
+
+## How the maths works
+
+- **SC + VAT** (the "++" menus): SC 10% is added to the food, then VAT 7% is charged on food plus SC.
+- **VAT included** menus: the menu price already has VAT, so only SC 10% is added on top.
+- **Per-person shares** are split in whole satang, so the shares always add up to the bill exactly. The discount is spread in proportion to what each person ate, so nobody goes negative.
+- The SC/VAT rule is set once for the whole bill: no SC/VAT, SC only, VAT only, or SC + VAT. The percentages fill in automatically and can be edited.
+
+The calculation is covered by unit tests, including a random-bill check that the shares always add up.
+
+## Running it
+
+```bash
+npm install
+npm start          # menu: dev server, tests, build, preview, release
+npm run dev        # dev server at http://localhost:5173
+npm run build      # tests + typecheck + static build into dist/
+npm test           # unit tests (Node 22.18+ runs the TypeScript directly)
+npm run test:web   # browser tests at phone, tablet and desktop sizes (Playwright)
+```
+
+`npm start 2` runs an option without the menu, which is handy for scripts and CI.
+
+## Data and sharing
+
+- Your bill is saved in the browser's local storage on that device.
+- Table sharing between two phones (copy-and-paste codes over WebRTC) is written and tested, but it is **switched off** in `src/config/features.ts`. It needs a network path between the phones and has no TURN relay, so it can fail on some mobile networks.
+
+## Prices and tax types
+
+Plate and item prices are stored in `src/config/brands.ts`, each with its sources and a check date. Restaurants change prices often, so check the current menu before you rely on a figure.
+
+This tool is not tax advice. The rules it uses are a practical reading of how Thai restaurants bill, and your receipt is the final word.
+
+## Project layout
+
+- `src/logic/`: pure calculation (money, bill, split, expressions, cells). No DOM, no storage.
+- `src/config/`: colours, typography, brands, presets, feature switches.
+- `src/strings/th.ts`: every piece of visible Thai text.
+- `src/integrations/`: local storage and WebRTC sharing.
+- `src/ui/`: rendering and event handling for both screens.
+- `tests/`: unit tests and an architecture guard that fails if text, colours or font sizes leak outside their files. Browser tests live in `tests/web/`.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the layer map.
+
+## Releases
+
+Versions follow semver, with a build number that goes up on every release. `npm run release` asks whether this is a patch, minor, major, or skip (build only). It runs the gate, updates the version and changelog, commits, and tags. Pushing and the GitHub release happen only with `--push`. The changelog is generated with [git-cliff](https://git-cliff.org) from conventional commits.
+
+## Contributing
+
+Work on a branch, keep the checks green (`npm test`, `npm run typecheck`, `npm run test:web`), and use conventional commit messages (`feat:`, `fix:`, `refactor:`, `docs:`).
+
+## Licence
+
+Apache License 2.0. See [LICENSE](LICENSE).
