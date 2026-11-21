@@ -1,8 +1,6 @@
 // Shell: a menu (☰) that switches between the two screens. The active screen is kept in the
 // URL hash (#sushi or #split), so a reload or a shared link opens the same screen.
 import { STRINGS } from '../strings/th.ts';
-import './app.ts'; // sushi screen: renders into #app on import
-import './split/split-app.ts'; // split-bill screen: renders into #split-root on import
 
 type Screen = 'sushi' | 'split';
 
@@ -62,3 +60,9 @@ menu.addEventListener('click', (event) => {
 window.addEventListener('hashchange', () => show(currentScreen()));
 
 show(currentScreen());
+
+// Load each screen separately, after the menu is wired. A failure in one screen (for example
+// old saved data) is logged and must not stop the menu from working.
+for (const load of [() => import('./app.ts'), () => import('./split/split-app.ts')]) {
+  load().catch((err: unknown) => console.error('Screen failed to start:', err));
+}
