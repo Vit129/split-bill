@@ -11,6 +11,7 @@ import { deriveState, mergeCells, setCell, type AppState, type Cells } from '../
 import { buildView, ownersFor, type View } from '../logic/view-model.ts';
 import { buildSummaryText } from '../logic/bill-text.ts';
 import { renderBody, renderClear, renderShare, type UiState } from './render.ts';
+import { SHARE_ENABLED } from '../config/features.ts';
 
 function byId<T extends HTMLElement>(id: string): T {
   const el = document.getElementById(id);
@@ -93,7 +94,7 @@ function render(): void {
   applyTokens(s.brandId);
   root.innerHTML = renderBody(s, view, ui);
   modalRoot.innerHTML = [
-    ui.share.open ? renderShare(ui.share, session !== null) : '',
+    SHARE_ENABLED && ui.share.open ? renderShare(ui.share, session !== null) : '',
     ui.clearOpen ? renderClear(BRANDS[s.brandId]) : '',
   ].join('');
   document.title = `${STRINGS.APP_TITLE} • ${BRANDS[s.brandId].shortName}`;
@@ -359,6 +360,7 @@ const actions: Record<string, Handler> = {
     removePerson(el.dataset['person'] ?? '');
   },
   'open-share'() {
+    if (!SHARE_ENABLED) return;
     ui.share.open = true;
     render();
   },

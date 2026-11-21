@@ -3,6 +3,7 @@
 import { BRAND_ORDER, BRANDS, type BrandDef, type BrandId } from '../config/brands.ts';
 import { STRINGS } from '../strings/th.ts';
 import { esc } from '../logic/escape.ts';
+import { SHARE_ENABLED } from '../config/features.ts';
 import { formatBaht } from '../logic/money.ts';
 import { brandPlateTotal, budgetStatus, type PlateRow, type View } from '../logic/view-model.ts';
 import type { AppState } from '../logic/cells.ts';
@@ -53,7 +54,7 @@ function header(view: View): string {
       <p class="muted">${esc(txt(brand.subKey))}</p>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-ghost" data-action="open-share" type="button">${esc(STRINGS.BTN_SHARE)}</button>
+      ${SHARE_ENABLED ? `<button class="btn btn-ghost" data-action="open-share" type="button">${esc(STRINGS.BTN_SHARE)}</button>` : ""}
       <button class="btn btn-soft" data-action="open-clear" type="button">${esc(STRINGS.BTN_CLEAR)}</button>
     </div>
   </header>

@@ -8,11 +8,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="src/ui/styles.css">
-  <script type="module" src="src/ui/app.ts"></script>
+  <script type="module" src="src/ui/shell.ts"></script>
 </head>
 <body>
-  <div id="app"></div>
-  <div id="modal-root"></div>
+  <header class="shell">
+    <button id="menu-btn" class="menu-btn" type="button" aria-expanded="false" aria-controls="menu">☰</button>
+    <span id="shell-title" class="shell-title"></span>
+  </header>
+  <nav id="menu" class="menu" hidden>
+    <button type="button" data-screen="sushi"></button>
+    <button type="button" data-screen="split"></button>
+  </nav>
+  <div id="sushi-screen">
+    <div id="app"></div>
+    <div id="modal-root"></div>
+  </div>
+  <div id="split-screen" hidden>
+    <div id="split-root"></div>
+  </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

@@ -15,7 +15,7 @@ npm test           # headless tests incl. architecture guard (Node 22.18+ runs .
 - **หารเท่ากัน / แยกตามคน**: equal split of the whole table, or count plates per person.
 - **กองกลาง**: shared plates or extras split equally among everyone.
 - **ส่วนลด**: spread across people in proportion to what each ate, so nobody goes negative.
-- **แชร์โต๊ะ**: host creates an invite code, guest pastes it and sends back a reply code, host pastes the reply. Then both sides sync automatically. Works on the same Wi-Fi; some mobile carriers (strict NAT) may fail.
+- **แชร์โต๊ะ (ปิดอยู่)**: ซ่อนไว้ตั้งแต่รอบนี้ เปิดกลับได้ที่ `src/config/features.ts`. รายละเอียดเดิม: host creates an invite code, guest pastes it and sends back a reply code, host pastes the reply. Then both sides sync automatically. Works on the same Wi-Fi; some mobile carriers (strict NAT) may fail.
 - **คัดลอกสรุปส่ง LINE**: copies a text summary.
 - Undo is intentionally not provided.
 
@@ -48,3 +48,8 @@ Reliable prices need a photo of the current menu or a receipt from each branch.
 ## Files
 
 See `ARCHITECTURE.md` for the layer map and data model.
+
+## Screens
+
+- **ซูชิ (นับจาน)**: pick a brand and count plates per person.
+- **หารบิล & คิดเงิน**: items with payers, per-item tax rules, discount before SC/VAT, and per-person paid status. Opened from the ☰ menu (`#split`).
