@@ -14,7 +14,6 @@ const baht = (satang: number): string => formatBaht(satang);
 
 export interface SplitUi {
   category: Category;
-  rule: TaxRule;
   payers: string[];
   editing: string | null;
   expanded: string[];
@@ -120,10 +119,6 @@ function itemFormCard(data: SplitData, ui: SplitUi): string {
           <input class="input" type="number" min="1" max="99" value="${esc(ui.qtyDraft)}" data-split-draft="qty"></label>
       </div>
       ${ui.itemError ? `<p class="level-over small">${esc(ui.itemError)}</p>` : ''}
-      <p class="label">${esc(txt('BILL_RULE_LABEL'))}</p>
-      <div class="chips">${(Object.keys(RULE_KEYS) as TaxRule[]).map((r) => `
-        <button type="button" class="chip${ui.rule === r ? ' is-active' : ''}" data-split-action="rule" data-rule="${r}"
-          aria-pressed="${ui.rule === r}">${esc(txt(RULE_KEYS[r]))}</button>`).join('')}</div>
       <p class="label">${esc(txt('BILL_PAYERS'))} <span class="muted small">${esc(txt('BILL_PAYERS_HINT'))}</span></p>
       <div class="chips">
         ${data.people.map((p) => `<button type="button" class="chip${ui.payers.includes(p.id) ? ' is-active' : ''}"
@@ -157,7 +152,7 @@ function itemRow(it: SplitItem, data: SplitData, ui: SplitUi): string {
   return `<div class="item-row${ui.editing === it.id ? ' is-editing' : ''}">
     <div class="item-main">
       <strong>${esc(it.name)}</strong>${it.qty > 1 ? ` <span class="pill">× ${it.qty}</span>` : ''}
-      <span class="pill">${esc(txt(RULE_KEYS[it.rule]))}</span>
+      <span class="pill">${esc(txt(RULE_KEYS[data.settings.categoryRules[it.category]]))}</span>
       <div class="muted small">${esc(payerText)}</div>
     </div>
     <div class="item-side">
@@ -169,8 +164,17 @@ function itemRow(it: SplitItem, data: SplitData, ui: SplitUi): string {
 }
 
 function settingsCard(settings: SplitSettings, discountBaht: string): string {
+  const categoryRows = CATEGORY_ORDER.map((c) => `
+    <div class="cat-rule">
+      <span class="small">${esc(txt(CATEGORY_KEYS[c]))}</span>
+      <div class="chips">${(Object.keys(RULE_KEYS) as TaxRule[]).map((r) => `
+        <button type="button" class="chip${settings.categoryRules[c] === r ? ' is-active' : ''}" data-split-action="cat-rule" data-cat="${c}" data-rule="${r}"
+          aria-pressed="${settings.categoryRules[c] === r}">${esc(txt(RULE_KEYS[r]))}</button>`).join('')}</div>
+    </div>`).join('');
   return `<section class="card">
     <h2>${esc(txt('BILL_SETTINGS_TITLE'))}</h2>
+    <p class="label">${esc(txt('BILL_CATEGORY_RULES'))}</p>
+    ${categoryRows}
     <div class="row two">
       <label class="lbl">${esc(txt('BILL_SC_RATE'))}
         <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.scRate}" data-split-change="sc-rate"></label>

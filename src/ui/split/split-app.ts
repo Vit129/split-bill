@@ -18,8 +18,6 @@ const txt = (key: keyof typeof STRINGS): string => String(STRINGS[key]);
 const fnStr = (key: keyof typeof STRINGS) => STRINGS[key] as unknown as (...args: (string | number)[]) => string;
 const randomId = (prefix: string): string => `${prefix}_${Math.random().toString(36).slice(2, 10).padEnd(8, '0')}`;
 
-const RULE_FOR_CATEGORY: Record<Category, TaxRule> = { food: 'bill', drink: 'bill', alcohol: 'sc10_vat7' };
-
 let data: SplitData = loadSplit() ?? freshData();
 let ui: SplitUi = freshUi(data);
 
@@ -35,7 +33,6 @@ function freshData(): SplitData {
 function freshUi(d: SplitData): SplitUi {
   return {
     category: 'food',
-    rule: 'bill',
     payers: d.people.map((p) => p.id),
     editing: null,
     expanded: [],
@@ -78,7 +75,6 @@ function resetItemForm(): void {
     priceDraft: '',
     qtyDraft: '1',
     itemError: '',
-    rule: RULE_FOR_CATEGORY[ui.category],
   };
 }
 
@@ -102,7 +98,6 @@ function saveItem(): void {
     name: name.slice(0, 60),
     unitSatang: Math.round(price * 100),
     qty,
-    rule: ui.rule,
     payers: [...ui.payers],
   };
   if (ui.editing) {
@@ -159,19 +154,19 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
   cat(el) {
     const cat = el.dataset['cat'] as Category | undefined;
     if (!cat) return;
-    ui = { ...ui, category: cat, rule: ui.editing ? ui.rule : RULE_FOR_CATEGORY[cat] };
+    ui = { ...ui, category: cat };
     render();
   },
-  rule(el) {
+  'cat-rule'(el) {
+    const cat = el.dataset['cat'] as Category | undefined;
     const rule = el.dataset['rule'] as TaxRule | undefined;
-    if (!rule) return;
-    ui = { ...ui, rule };
-    render();
+    if (!cat || !rule) return;
+    setSettings({ categoryRules: { ...data.settings.categoryRules, [cat]: rule } });
   },
   preset(el) {
     const preset = BILL_PRESETS[ui.category][Number(el.dataset['index'])];
     if (!preset) return;
-    ui = { ...ui, nameDraftItem: txt(preset.key), priceDraft: String(preset.price), rule: preset.rule, itemError: '' };
+    ui = { ...ui, nameDraftItem: txt(preset.key), priceDraft: String(preset.price), itemError: '' };
     render();
   },
   payer(el) {
@@ -189,7 +184,6 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
       ...ui,
       editing: item.id,
       category: item.category,
-      rule: item.rule,
       payers: [...item.payers],
       nameDraftItem: item.name,
       priceDraft: String(item.unitSatang / 100),

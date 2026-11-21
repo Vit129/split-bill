@@ -5,12 +5,13 @@ import { evaluateExpression } from '../src/logic/expr.ts';
 import { lcg } from './fixtures/billing.fixtures.ts';
 
 const base: SplitSettings = {
+  categoryRules: { food: 'bill', drink: 'net', alcohol: 'sc10_vat7' },
   scRate: 10, vatRate: 7, compound: true, discountSatang: 0,
   discountMode: 'proportional', taxSplit: 'itemized', roundUp: false,
 };
 
-const item = (id: string, unit: number, payers: string[], rule: SplitItem['rule'] = 'bill', qty = 1): SplitItem =>
-  ({ id, category: 'food', name: id, unitSatang: unit * 100, qty, rule, payers });
+const item = (id: string, unit: number, payers: string[], category: SplitItem['category'] = 'food', qty = 1): SplitItem =>
+  ({ id, category, name: id, unitSatang: unit * 100, qty, payers });
 
 test('[BE-UT] expression parser: sums, products, brackets, and rejection of junk', () => {
   assert.equal(evaluateExpression('599+49'), 648);
@@ -28,12 +29,17 @@ test('[BE-BL] per-person totals add up to the bill for random bills, with or wit
   const ids = ['a', 'b', 'c', 'd'];
   for (let run = 0; run < 300; run += 1) {
     const items: SplitItem[] = Array.from({ length: 1 + Math.floor(rand() * 6) }, (_, k) =>
-      item(`i${k}`, 1 + Math.floor(rand() * 500), ids.filter(() => rand() < 0.5), (['bill', 'net', 'vat7', 'sc10_vat7'] as const)[k % 4], 1 + Math.floor(rand() * 3)));
+      item(`i${k}`, 1 + Math.floor(rand() * 500), ids.filter(() => rand() < 0.5), (['food', 'drink', 'alcohol'] as const)[k % 3], 1 + Math.floor(rand() * 3)));
     const settings: SplitSettings = {
       ...base,
       discountSatang: Math.floor(rand() * 60000),
       discountMode: run % 2 ? 'equal' : 'proportional',
       taxSplit: run % 3 ? 'itemized' : 'equal',
+      categoryRules: {
+        food: (['bill', 'net', 'vat7', 'sc10_vat7'] as const)[run % 4] ?? 'bill',
+        drink: (['bill', 'net', 'vat7', 'sc10_vat7'] as const)[(run + 1) % 4] ?? 'bill',
+        alcohol: (['bill', 'net', 'vat7', 'sc10_vat7'] as const)[(run + 2) % 4] ?? 'bill',
+      },
     };
     const r = computeSplit(items, ids, settings);
     assert.equal(r.totalSatang, r.grossSatang - r.discountSatang + r.scSatang + r.vatSatang, `run ${run}`);
@@ -45,7 +51,7 @@ test('[BE-BL] per-person totals add up to the bill for random bills, with or wit
 });
 
 test('[BE-IT] an item nobody picked is shared by everyone and is flagged', () => {
-  const r = computeSplit([item('x', 100, [])], ['a', 'b'], { ...base, scRate: 0, vatRate: 0 });
+  const r = computeSplit([item('x', 100, [])], ['a', 'b'], { ...base, categoryRules: { food: 'net', drink: 'net', alcohol: 'net' } });
   assert.equal(r.unassigned, 1);
   assert.equal(r.persons[0]?.foodSatang, 5000);
   assert.equal(r.persons[1]?.foodSatang, 5000);
@@ -53,7 +59,7 @@ test('[BE-IT] an item nobody picked is shared by everyone and is flagged', () =>
 
 test('[BE-BL] equal discount never takes more than a person ate (no negative shares)', () => {
   const items = [item('a1', 10, ['a']), item('b1', 100, ['b'])];
-  const r = computeSplit(items, ['a', 'b'], { ...base, scRate: 0, vatRate: 0, discountSatang: 4000, discountMode: 'equal' });
+  const r = computeSplit(items, ['a', 'b'], { ...base, categoryRules: { food: 'net', drink: 'net', alcohol: 'net' }, discountSatang: 4000, discountMode: 'equal' });
   assert.equal(r.persons[0]?.discountSatang, 1000, 'a ate only 10 baht so takes 10 off');
   assert.equal(r.persons[1]?.discountSatang, 3000, 'b takes the rest');
   assert.equal(r.persons[0]?.totalSatang, 0);
@@ -67,7 +73,7 @@ test('[BE-BL] discount is applied before SC/VAT (matches the sushi calculator)',
 });
 
 test('[BE-BL] round up makes each total a whole baht', () => {
-  const r = computeSplit([item('a', 33.33, ['a'], 'net')], ['a'], { ...base, roundUp: true });
+  const r = computeSplit([item('a', 33.33, ['a'], 'drink')], ['a'], { ...base, roundUp: true });
   assert.equal(r.persons[0]?.totalSatang, 3400);
 });
 

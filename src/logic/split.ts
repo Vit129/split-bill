@@ -12,12 +12,13 @@ export interface SplitItem {
   name: string;
   unitSatang: number;
   qty: number;
-  rule: TaxRule;
   // Empty = nobody chosen. Such an item is shared by everyone and counted in `unassigned`.
   payers: string[];
 }
 
 export interface SplitSettings {
+  // SC/VAT rule for each category. Set once in the settings card, not per item.
+  categoryRules: Record<Category, TaxRule>;
   scRate: number;
   vatRate: number;
   compound: boolean; // VAT on (food + SC), as in ++ menus
@@ -112,7 +113,7 @@ export function computeSplit(items: readonly SplitItem[], personIds: readonly st
       unassigned += 1;
     }
     const shares = allocate(base, owners.map(() => 1));
-    const rate = rateFor(item.rule, s);
+    const rate = rateFor(s.categoryRules[item.category], s);
     owners.forEach((owner, k) => {
       const share = shares[k] ?? 0;
       const sc = mulRound(share, rate.sc, 100);

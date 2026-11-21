@@ -190,3 +190,5 @@ dl { margin: 0; }
 .empty { padding: 8px 0; text-align: center; }
 .level-warn { color: var(--warning); font-weight: 700; }
 @media (max-width: 520px) { .row.two { grid-template-columns: 1fr; } }
+
+.cat-rule { display: grid; gap: 6px; }

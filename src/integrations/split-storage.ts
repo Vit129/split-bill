@@ -23,6 +23,7 @@ export const defaultSplitData = (): SplitData => ({
   people: [],
   items: [],
   settings: {
+    categoryRules: { food: 'bill', drink: 'bill', alcohol: 'sc10_vat7' },
     scRate: 10, vatRate: 7, compound: true, discountSatang: 0,
     discountMode: 'proportional', taxSplit: 'itemized', roundUp: false,
   },
@@ -36,7 +37,9 @@ export function loadSplit(): SplitData | null {
     if (typeof parsed !== 'object' || parsed === null) return null;
     const d = parsed as Partial<SplitData>;
     if (!Array.isArray(d.people) || !Array.isArray(d.items) || typeof d.settings !== 'object' || d.settings === null) return null;
-    return { ...defaultSplitData(), ...d } as SplitData;
+    const base = defaultSplitData();
+    // Older saves have no categoryRules: fill them in from the defaults.
+    return { ...base, ...d, settings: { ...base.settings, ...d.settings } } as SplitData;
   } catch (err) {
     console.warn('Could not read saved split bill:', err);
     return null;
