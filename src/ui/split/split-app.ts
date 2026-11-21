@@ -134,6 +134,13 @@ function setSettings(patch: Partial<SplitData['settings']>): void {
   commit();
 }
 
+function setCategoryRate(cat: string | undefined, part: 'sc' | 'vat', raw: string): void {
+  if (cat !== 'food' && cat !== 'drink' && cat !== 'alcohol') return;
+  const value = Math.max(0, Number(raw) || 0);
+  const current = data.settings.categoryRates[cat];
+  setSettings({ categoryRates: { ...data.settings.categoryRates, [cat]: { ...current, [part]: value } } });
+}
+
 const clickActions: Record<string, (el: HTMLElement) => void> = {
   'clear-open': () => { ui = { ...ui, clearConfirm: true }; render(); },
   'clear-cancel': () => { ui = { ...ui, clearConfirm: false }; render(); },
@@ -155,7 +162,13 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
     const cat = el.dataset['cat'] as Category | undefined;
     const rule = el.dataset['rule'] as TaxRule | undefined;
     if (!cat || !rule) return;
-    setSettings({ categoryRules: { ...data.settings.categoryRules, [cat]: rule } });
+    const rates = { ...data.settings.categoryRates[cat] };
+    if (rule === 'sc' || rule === 'sc_vat') if (rates.sc === 0) rates.sc = 10;
+    if (rule === 'vat' || rule === 'sc_vat') if (rates.vat === 0) rates.vat = 7;
+    setSettings({
+      categoryRules: { ...data.settings.categoryRules, [cat]: rule },
+      categoryRates: { ...data.settings.categoryRates, [cat]: rates },
+    });
   },
   preset(el) {
     const preset = BILL_PRESETS[ui.category][Number(el.dataset['index'])];
@@ -242,8 +255,8 @@ const changeActions: Record<string, (el: HTMLInputElement) => void> = {
   },
   shop(el) { data = { ...data, shopName: el.value.slice(0, 60) }; saveSplit(data); },
   note(el) { data = { ...data, note: el.value.slice(0, 120) }; saveSplit(data); },
-  'sc-rate'(el) { setSettings({ scRate: Math.max(0, Number(el.value) || 0) }); },
-  'vat-rate'(el) { setSettings({ vatRate: Math.max(0, Number(el.value) || 0) }); },
+  'cat-sc'(el) { setCategoryRate(el.dataset['cat'], 'sc', el.value); },
+  'cat-vat'(el) { setCategoryRate(el.dataset['cat'], 'vat', el.value); },
   discount(el) {
     const baht = Math.max(0, Number(el.value) || 0);
     setSettings({ discountSatang: Math.round(baht * 100) });

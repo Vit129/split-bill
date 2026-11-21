@@ -6,7 +6,7 @@ import { lcg } from './fixtures/billing.fixtures.ts';
 
 const base: SplitSettings = {
   categoryRules: { food: 'sc_vat', drink: 'none', alcohol: 'sc_vat' },
-  scRate: 10, vatRate: 7, compound: true, discountSatang: 0,
+  categoryRates: { food: { sc: 10, vat: 7 }, drink: { sc: 10, vat: 7 }, alcohol: { sc: 10, vat: 7 } }, compound: true, discountSatang: 0,
   discountMode: 'proportional', taxSplit: 'itemized', roundUp: false,
 };
 

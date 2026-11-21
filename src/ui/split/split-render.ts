@@ -38,13 +38,19 @@ const RULE_KEYS: Record<TaxRule, StringKey> = {
   sc_vat: 'BILL_RULE_SC_VAT',
 };
 
-// Labels show the live percentages from the settings card.
-const ruleLabel = (rule: TaxRule, settings: SplitSettings): string => {
+// Plain labels: the percentages sit in the inputs under each choice.
+const ruleLabel = (rule: TaxRule): string => {
   if (rule === 'none') return txt('BILL_RULE_NONE');
-  if (rule === 'sc') return fnStr('BILL_RULE_SC')(settings.scRate);
-  if (rule === 'vat') return fnStr('BILL_RULE_VAT')(settings.vatRate);
-  return fnStr('BILL_RULE_SC_VAT')(settings.scRate, settings.vatRate);
+  if (rule === 'sc') return txt('BILL_RULE_SC');
+  if (rule === 'vat') return txt('BILL_RULE_VAT');
+  return txt('BILL_RULE_SC_VAT');
 };
+
+// Which percentage inputs a rule shows.
+const partsOf = (rule: TaxRule): { sc: boolean; vat: boolean } => ({
+  sc: rule === 'sc' || rule === 'sc_vat',
+  vat: rule === 'vat' || rule === 'sc_vat',
+});
 
 const CATEGORY_ORDER: Category[] = ['food', 'drink', 'alcohol'];
 
@@ -150,7 +156,7 @@ function itemRow(it: SplitItem, data: SplitData, ui: SplitUi): string {
   return `<div class="item-row${ui.editing === it.id ? ' is-editing' : ''}">
     <div class="item-main">
       <strong>${esc(it.name)}</strong>${it.qty > 1 ? ` <span class="pill">× ${it.qty}</span>` : ''}
-      <span class="pill">${esc(ruleLabel(data.settings.categoryRules[it.category], data.settings))}</span>
+      <span class="pill">${esc(pillText(data.settings, it.category))}</span>
       <div class="muted small">${esc(txt('BILL_EATERS'))}</div>
       <div class="chips">${eaters}</div>
       ${it.payers.length === 0 ? `<div class="level-warn small">${esc(txt('BILL_ITEM_NO_PAYER'))}</div>` : ''}
@@ -163,24 +169,31 @@ function itemRow(it: SplitItem, data: SplitData, ui: SplitUi): string {
   </div>`;
 }
 
+// Pill text on each item: the rule plus its live percentages for that category.
+function pillText(settings: SplitSettings, c: Category): string {
+  const rule = settings.categoryRules[c];
+  const rates = settings.categoryRates[c];
+  const p = partsOf(rule);
+  const bits = [p.sc ? `SC ${rates.sc}%` : '', p.vat ? `VAT ${rates.vat}%` : ''].filter(Boolean);
+  return bits.length ? bits.join(' + ') : txt('BILL_RULE_NONE');
+}
+
 function settingsCard(settings: SplitSettings, discountBaht: string): string {
   const categoryRows = CATEGORY_ORDER.map((c) => `
     <div class="cat-rule">
       <span class="small">${esc(txt(CATEGORY_KEYS[c]))}</span>
       <div class="chips">${(Object.keys(RULE_KEYS) as TaxRule[]).map((r) => `
         <button type="button" class="chip${settings.categoryRules[c] === r ? ' is-active' : ''}" data-split-action="cat-rule" data-cat="${c}" data-rule="${r}"
-          aria-pressed="${settings.categoryRules[c] === r}">${esc(ruleLabel(r, settings))}</button>`).join('')}</div>
+          aria-pressed="${settings.categoryRules[c] === r}">${esc(ruleLabel(r))}</button>`).join('')}</div>
+      ${partsOf(settings.categoryRules[c]).sc ? `<label class="lbl">${esc(txt('BILL_SC_PERCENT'))}
+        <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.categoryRates[c].sc}" data-split-change="cat-sc" data-cat="${c}"></label>` : ''}
+      ${partsOf(settings.categoryRules[c]).vat ? `<label class="lbl">${esc(txt('BILL_VAT_PERCENT'))}
+        <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.categoryRates[c].vat}" data-split-change="cat-vat" data-cat="${c}"></label>` : ''}
     </div>`).join('');
   return `<section class="card">
     <h2>${esc(txt('BILL_SETTINGS_TITLE'))}</h2>
     <p class="label">${esc(txt('BILL_CATEGORY_RULES'))}</p>
     ${categoryRows}
-    <div class="row two">
-      <label class="lbl">${esc(txt('BILL_SC_RATE'))}
-        <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.scRate}" data-split-change="sc-rate"></label>
-      <label class="lbl">${esc(txt('BILL_VAT_RATE'))}
-        <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.vatRate}" data-split-change="vat-rate"></label>
-    </div>
     <div class="row two">
       <label class="lbl">${esc(txt('BILL_DISCOUNT'))}
         <input class="input" type="number" min="0" step="1" value="${esc(discountBaht)}" data-split-change="discount"></label>
