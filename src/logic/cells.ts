@@ -210,7 +210,7 @@ export function deriveState(cells: Cells): AppState {
   const modeRaw = liveValue(cells, 'cfg:mode');
   const equalRaw = liveValue(cells, 'cfg:equalTaxSplit');
   return {
-    brandId: typeof brandRaw === 'string' && isBrandId(brandRaw) && BRANDS[brandRaw].kind === 'plates' ? brandRaw : 'sushiro',
+    brandId: typeof brandRaw === 'string' && isBrandId(brandRaw) ? brandRaw : 'sushiro',
     mode: modeRaw === 'person' ? 'person' : 'table',
     equalTaxSplit: equalRaw === true,
     people: people.map((p) => ({ id: p.id, name: p.n })),

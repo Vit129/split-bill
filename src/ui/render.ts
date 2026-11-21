@@ -69,13 +69,6 @@ function brandTabs(state: AppState): string {
     ${BRAND_ORDER.map((id: BrandId) => {
       const b = BRANDS[id];
       const count = brandPlateTotal(state, id);
-      if (b.kind === 'items') {
-        // Item-priced brands are ordered on the split screen with that brand's menu selected.
-        return `<a class="brand-tab" href="#split=${id}" style="--brand-tab: var(--brand-${id}-primary)">
-        <span class="dot" aria-hidden="true"></span>
-        <span>${esc(b.shortName)}</span>
-      </a>`;
-      }
       const active = id === state.brandId;
       return `<button type="button" class="brand-tab${active ? ' is-active' : ''}" style="--brand-tab: var(--brand-${id}-primary)"
         data-action="brand" data-brand="${id}" aria-pressed="${active}">
@@ -142,6 +135,12 @@ function modeCard(state: AppState, view: View): string {
 }
 
 function platesCard(state: AppState, view: View): string {
+  if (view.brand.kind === 'items') {
+    return `<section class="card">
+    <h2>${esc(STRINGS.PLATES_TITLE(view.brand.shortName))}</h2>
+    <p class="muted">${esc(STRINGS.BILL_ITEM_BRAND_HINT)}</p>
+  </section>`;
+  }
   const rows = view.plateRows.map((p: PlateRow) => {
     const name = txt(p.nameKey);
     const total = p.count * p.price * 100;

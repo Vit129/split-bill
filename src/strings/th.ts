@@ -325,6 +325,7 @@ export const STRINGS = {
   BILL_SUMMARY_NOTE: (note: string) => `📌 ${note}`,
   BILL_SHOP_DEFAULT: 'บิลค่าอาหาร & เครื่องดื่ม',
   BILL_OPEN_SPLIT: 'เปิดหารบิล',
+  BILL_ITEM_BRAND_HINT: 'ร้านนี้คิดราคาตามรายการที่สั่ง ใช้หน้าหารบิลจากเมนู ☰',
   BILL_SOURCE_LABEL: 'ปุ่มลัดตามร้าน',
   BILL_SOURCE_GENERAL: 'ทั่วไป',
   BILL_SOURCE_NOTE: 'ตั้ง SC/VAT ตามร้านแล้ว (ราคาในเมนูรวม VAT แล้ว บวก SC 10%; ++ บวก SC และ VAT)',
