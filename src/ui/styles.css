@@ -168,7 +168,7 @@ dl { margin: 0; }
 .stack { display: grid; gap: 10px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: var(--text-label); font-weight: 600; cursor: pointer; }
-.chip.is-active { background: var(--brand-primary); border-color: var(--brand-primary); color: var(--accent-ink); }
+.chip.is-active { background: var(--brand-primary); border-color: var(--brand-primary); color: var(--surface); }
 .presets-row { display: grid; gap: 6px; }
 .group { display: grid; gap: 4px; }
 .item-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px; border-radius: 12px; border: 1px solid var(--line); }

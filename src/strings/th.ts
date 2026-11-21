@@ -262,7 +262,7 @@ export const STRINGS = {
   BILL_PRICE_LABEL: 'ราคา (พิมพ์สูตรได้ เช่น 599+49)',
   BILL_QTY_LABEL: 'จำนวน',
   BILL_RULE_LABEL: 'เรตภาษีรายการนี้',
-  BILL_RULE_BILL: 'ตามบิลหลัก',
+  BILL_RULE_BILL: 'ตาม SC/VAT ที่ตั้งไว้ของบิล',
   BILL_RULE_NET: 'ไม่มี SC/VAT',
   BILL_RULE_VAT7: 'VAT 7% อย่างเดียว',
   BILL_RULE_SC_VAT: 'SC 10% + VAT 7%',
