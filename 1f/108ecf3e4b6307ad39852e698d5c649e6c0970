@@ -1,0 +1,21 @@
+release-manifest.json
+  s_1d58f7832d7b65::t_84d3754ce31f53 3
+src/config/version.ts
+  s_1d58f7832d7b65::t_30c8b45fe5c36d 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "1f108ecf3e4b6307ad39852e698d5c649e6c0970",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
