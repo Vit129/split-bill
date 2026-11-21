@@ -1,0 +1,25 @@
+src/strings/th.ts
+  s_1d58f7832d7b65::t_80c192ae8dc72d 264
+tests/web/split.spec.ts
+  s_1d58f7832d7b65::t_8170c8a0fb376e 17-25,27-28
+src/ui/split/split-app.ts
+  s_1d58f7832d7b65::t_80c192ae8dc72d 95,118,128,166-177
+src/ui/split/split-render.ts
+  s_1d58f7832d7b65::t_80c192ae8dc72d 140-141,146-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "6b885e2d847f3f66b83670454c52b60962b73cd9",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
