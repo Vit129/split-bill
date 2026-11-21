@@ -1,6 +1,6 @@
 // Markup builders. Pure: data in, HTML string out. Every user-typed value goes through esc().
 // Labels come only from strings/th.ts; no colour or font literals (they are CSS variables).
-import { PLATE_BRAND_ORDER, BRANDS, type BrandDef, type BrandId } from '../config/brands.ts';
+import { BRAND_ORDER, BRANDS, type BrandDef, type BrandId } from '../config/brands.ts';
 import { STRINGS } from '../strings/th.ts';
 import { esc } from '../logic/escape.ts';
 import { SHARE_ENABLED } from '../config/features.ts';
@@ -66,10 +66,17 @@ function header(view: View): string {
 
 function brandTabs(state: AppState): string {
   return `<nav class="brand-tabs" aria-label="${esc(STRINGS.BRAND_SECTION)}">
-    ${PLATE_BRAND_ORDER.map((id: BrandId) => {
+    ${BRAND_ORDER.map((id: BrandId) => {
       const b = BRANDS[id];
-      const active = id === state.brandId;
       const count = brandPlateTotal(state, id);
+      if (b.kind === 'items') {
+        // Item-priced brands are ordered on the split screen with that brand's menu selected.
+        return `<a class="brand-tab" href="#split=${id}" style="--brand-tab: var(--brand-${id}-primary)">
+        <span class="dot" aria-hidden="true"></span>
+        <span>${esc(b.shortName)}</span>
+      </a>`;
+      }
+      const active = id === state.brandId;
       return `<button type="button" class="brand-tab${active ? ' is-active' : ''}" style="--brand-tab: var(--brand-${id}-primary)"
         data-action="brand" data-brand="${id}" aria-pressed="${active}">
         <span class="dot" aria-hidden="true"></span>

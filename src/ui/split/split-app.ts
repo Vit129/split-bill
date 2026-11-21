@@ -147,6 +147,27 @@ function setSettings(patch: Partial<SplitData['settings']>): void {
   commit();
 }
 
+// "general" or one item brand. An item brand sets the bill rates to match its menu.
+function chooseSource(value: string | undefined): void {
+  if (value === undefined || value === 'general') {
+    ui = { ...ui, source: 'general' };
+    render();
+    return;
+  }
+  const id = value as BrandId;
+  const brand = BRANDS[id];
+  if (!brand || brand.kind !== 'items') return;
+  const plus = brand.taxType === 'plus_plus';
+  ui = { ...ui, source: id };
+  setSettings({ scRate: 10, vatRate: plus ? 7 : 0, compound: plus });
+}
+
+// Opening #split=<brand> from the sushi screen selects that brand's menu.
+function applyHash(): void {
+  const m = /^#split=([a-z]+)$/.exec(window.location.hash);
+  if (m && m[1]) chooseSource(m[1]);
+}
+
 const clickActions: Record<string, (el: HTMLElement) => void> = {
   'clear-open': () => { ui = { ...ui, clearConfirm: true }; render(); },
   'clear-cancel': () => { ui = { ...ui, clearConfirm: false }; render(); },
@@ -171,19 +192,7 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
     render();
   },
   source(el) {
-    const value = el.dataset['value'];
-    if (value === 'general' || value === undefined) {
-      ui = { ...ui, source: 'general' };
-      render();
-      return;
-    }
-    const id = value as BrandId;
-    const brand = BRANDS[id];
-    if (!brand) return;
-    // Brand menus show prices that already include VAT (vat_included) or add both (++); set the bill rates to match.
-    const plus = brand.taxType === 'plus_plus';
-    ui = { ...ui, source: id };
-    setSettings({ scRate: 10, vatRate: plus ? 7 : 0, compound: plus });
+    chooseSource(el.dataset['value']);
   },
   preset(el) {
     const index = Number(el.dataset['index']);
@@ -322,3 +331,6 @@ splitRoot.addEventListener('submit', (event) => {
 });
 
 render();
+
+window.addEventListener('hashchange', applyHash);
+applyHash();

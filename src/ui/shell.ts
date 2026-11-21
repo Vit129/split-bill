@@ -22,7 +22,7 @@ for (const button of menu.querySelectorAll<HTMLButtonElement>('[data-screen]')) 
 menuBtn.setAttribute('aria-label', STRINGS.MENU_OPEN);
 
 function currentScreen(): Screen {
-  return window.location.hash === '#split' ? 'split' : 'sushi';
+  return window.location.hash.startsWith('#split') ? 'split' : 'sushi';
 }
 
 function show(screen: Screen): void {

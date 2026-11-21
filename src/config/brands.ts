@@ -96,8 +96,8 @@ export const BRANDS: Record<BrandId, BrandDef> = {
     theme: 'katsumidori',
     taxType: 'plus_plus',
     kind: 'plates',
-    status: 'unverified',
-    checkedAt: CHECKED_AT,
+    status: 'verified',
+    checkedAt: '2026-11-21',
     noteKey: 'NOTE_KATSU',
     subKey: 'BRAND_SUB_KATSU',
     sources: [
