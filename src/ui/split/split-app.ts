@@ -156,7 +156,7 @@ function chooseSource(value: string | undefined): void {
   }
   const id = value as BrandId;
   const brand = BRANDS[id];
-  if (!brand || brand.kind !== 'items') return;
+  if (!brand) return;
   const plus = brand.taxType === 'plus_plus';
   ui = { ...ui, source: id };
   setSettings({ scRate: 10, vatRate: plus ? 7 : 0, compound: plus });

@@ -4,7 +4,7 @@ import { esc } from '../../logic/escape.ts';
 import { formatBaht } from '../../logic/money.ts';
 import type { Category, PersonResult, SplitItem, SplitResult, SplitSettings, TaxRule } from '../../logic/split.ts';
 import { BILL_PRESETS } from '../../config/bill-presets.ts';
-import { BRANDS, ITEM_BRAND_ORDER, type BrandId } from '../../config/brands.ts';
+import { BRANDS, BRAND_ORDER, type BrandId } from '../../config/brands.ts';
 import type { SplitData, SplitPerson } from '../../integrations/split-storage.ts';
 
 type StringKey = keyof typeof STRINGS;
@@ -94,7 +94,7 @@ function peopleCard(data: SplitData, ui: SplitUi): string {
 function presetsRow(ui: SplitUi): string {
   const sources = [
     `<button type="button" class="${ui.source === 'general' ? 'is-active' : ''}" data-split-action="source" data-value="general" aria-pressed="${ui.source === 'general'}">${esc(txt('BILL_SOURCE_GENERAL'))}</button>`,
-    ...ITEM_BRAND_ORDER.map((id) => `<button type="button" class="${ui.source === id ? 'is-active' : ''}" data-split-action="source" data-value="${id}" aria-pressed="${ui.source === id}">${esc(BRANDS[id].shortName)}</button>`),
+    ...BRAND_ORDER.map((id) => `<button type="button" class="${ui.source === id ? 'is-active' : ''}" data-split-action="source" data-value="${id}" aria-pressed="${ui.source === id}">${esc(BRANDS[id].shortName)}</button>`),
   ].join('');
   const chips = ui.source === 'general'
     ? BILL_PRESETS[ui.category].map((p, i) => `

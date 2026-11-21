@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-test('[FE-IT] sushi screen lists all five brands; item brands open the split screen', async ({ page }) => {
+test('[FE-IT] sushi screen lists all five brands with their plates', async ({ page }) => {
   await page.goto('/#sushi');
   await page.waitForSelector('.plate-row');
   await expect(page.locator('.brand-tab')).toHaveCount(5);
   await page.locator('.brand-tab', { hasText: 'Ginza Onodera' }).click();
   await expect(page).toHaveURL(/#sushi$/);
   await expect(page.locator('#sushi-screen')).toBeVisible();
-  await expect(page.locator('.plate-row')).toHaveCount(0);
+  await expect(page.locator('.plate-row')).toHaveCount(7);
 });
 
 test('[FE-IT] split: choosing Hama fills its item presets and sets VAT-included rates', async ({ page }) => {
