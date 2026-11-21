@@ -9,6 +9,7 @@ const OPTIONS = [
   { label: 'Browser tests (Playwright, every screen size)', steps: [['npm', ['run', 'test:web']]] },
   { label: 'Build static app into dist/ (tests + typecheck first)', steps: [['npm', ['run', 'build']]] },
   { label: 'Preview the built app (http://localhost:4173)', steps: [['npm', ['run', 'build']], ['npm', ['run', 'preview']]] },
+  { label: 'Release: patch / minor / major / skip (asks which)', steps: [['node', ['scripts/release.js']]] },
 ];
 
 function runStep([command, args]) {

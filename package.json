@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test \"tests/*.test.ts\"",
     "test:web": "playwright test",
-    "test:all": "npm test && npm run typecheck && npm run test:web"
+    "test:all": "npm test && npm run typecheck && npm run test:web",
+    "release": "node scripts/release.js",
+    "release:dry": "node scripts/release.js patch --dry-run"
   },
   "engines": {
     "node": ">=22.18"

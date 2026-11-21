@@ -1,6 +1,7 @@
 // Shell: a menu (☰) that switches between the two screens. The active screen is kept in the
 // URL hash (#sushi or #split), so a reload or a shared link opens the same screen.
 import { STRINGS } from '../strings/th.ts';
+import { APP_BUILD, APP_VERSION } from '../config/version.ts';
 
 type Screen = 'sushi' | 'split';
 
@@ -10,6 +11,9 @@ const shellTitle = document.getElementById('shell-title');
 const sushiScreen = document.getElementById('sushi-screen');
 const splitScreen = document.getElementById('split-screen');
 if (!menuBtn || !menu || !shellTitle || !sushiScreen || !splitScreen) throw new Error('Missing shell elements');
+
+const versionEl = document.getElementById('app-version');
+if (versionEl) versionEl.textContent = `v${APP_VERSION} · build ${APP_BUILD}`;
 
 const labels: Record<Screen, string> = { sushi: STRINGS.MENU_SUSHI, split: STRINGS.MENU_SPLIT };
 
