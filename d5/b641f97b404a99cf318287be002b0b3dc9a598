@@ -1,0 +1,34 @@
+src/integrations/split-storage.ts
+  s_1d58f7832d7b65::t_49655ab36f964c 40-42
+  s_1d58f7832d7b65::t_2ea249ccd31d67 26
+src/config/bill-presets.ts
+  s_1d58f7832d7b65::t_2ea249ccd31d67 2,12-15,18-21,24-27
+src/logic/split.ts
+  s_1d58f7832d7b65::t_0a0e6d39ecdfe5 20-21,116
+src/ui/split/split-app.ts
+  s_1d58f7832d7b65::t_735e62ca2e65f0 157,160-161,163-164,169
+src/strings/th.ts
+  s_1d58f7832d7b65::t_49655ab36f964c 264
+src/ui/split/split-render.ts
+  s_1d58f7832d7b65::t_49655ab36f964c 155,167-173,176-177
+tests/split.test.ts
+  s_1d58f7832d7b65::t_2ea249ccd31d67 8,13-14,32,38-42,54,62,76
+src/ui/styles.css
+  s_1d58f7832d7b65::t_bc7f77103d2e70 193-194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "d5b641f97b404a99cf318287be002b0b3dc9a598",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
