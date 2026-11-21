@@ -1,0 +1,25 @@
+src/strings/th.ts
+  s_1d58f7832d7b65::t_5c82531391cf8c 328
+src/logic/cells.ts
+  s_1d58f7832d7b65::t_5c82531391cf8c 213
+tests/web/brands.spec.ts
+  s_1d58f7832d7b65::t_5c82531391cf8c 8-10
+src/ui/render.ts
+  s_1d58f7832d7b65::t_5c82531391cf8c 138-143
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "130f0ef345dba21d366a1e8d555a883f363b263b",
+  "prompts": {},
+  "sessions": {
+    "s_1d58f7832d7b65": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c01267ae-750f-41c7-a0c9-2d16947babc2",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
