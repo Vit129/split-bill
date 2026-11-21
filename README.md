@@ -1,5 +1,8 @@
 # split-bill
 
+> **Live Web Application:** https://vit129.github.io/split-bill/
+> Thai bill splitter: SC and VAT per person, per item or per plate. Runs in the browser, no account.
+
 A bill calculator for eating out in Thailand. It works out who owes what, with service charge (SC) and VAT handled the way Thai restaurants bill them.
 
 It runs entirely in the browser. There is no server and no account, and nothing you enter leaves your device.
