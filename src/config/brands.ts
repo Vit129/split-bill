@@ -43,8 +43,8 @@ export const BRANDS: Record<BrandId, BrandDef> = {
     shortName: 'Sushiro',
     theme: 'sushiro',
     taxType: 'vat_included',
-    status: 'unverified',
-    checkedAt: CHECKED_AT,
+    status: 'verified',
+    checkedAt: '2026-11-21',
     noteKey: 'NOTE_SUSHIRO',
     subKey: 'BRAND_SUB_SUSHIRO',
     sources: [
