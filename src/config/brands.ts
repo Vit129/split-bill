@@ -24,6 +24,7 @@ export interface BrandDef {
   shortName: string;
   theme: BrandId;
   taxType: 'vat_included' | 'plus_plus';
+  kind: 'plates' | 'items';
   status: 'unverified' | 'verified';
   checkedAt: string;
   noteKey: string;
@@ -43,6 +44,7 @@ export const BRANDS: Record<BrandId, BrandDef> = {
     shortName: 'Sushiro',
     theme: 'sushiro',
     taxType: 'vat_included',
+    kind: 'plates',
     status: 'verified',
     checkedAt: '2026-11-21',
     noteKey: 'NOTE_SUSHIRO',
@@ -72,18 +74,13 @@ export const BRANDS: Record<BrandId, BrandDef> = {
     shortName: 'Hama Sushi',
     theme: 'hama',
     taxType: 'vat_included',
+    kind: 'items',
     status: 'unverified',
     checkedAt: CHECKED_AT,
     noteKey: 'NOTE_HAMA',
     subKey: 'BRAND_SUB_HAMA',
     sources: ['https://brandinside.asia/?p=239488'],
-    plates: [
-      { id: 'white', color: 'white', price: 40, nameKey: 'PLATE_NAME_WHITE', descKey: 'DESC_HAMA_WHITE' },
-      { id: 'red', color: 'red', price: 60, nameKey: 'PLATE_NAME_RED', descKey: 'DESC_HAMA_RED' },
-      { id: 'silver', color: 'silver', price: 80, nameKey: 'PLATE_NAME_SILVER', descKey: 'DESC_HAMA_SILVER' },
-      { id: 'gold', color: 'gold', price: 100, nameKey: 'PLATE_NAME_GOLD', descKey: 'DESC_HAMA_GOLD' },
-      { id: 'black', color: 'black', price: 120, nameKey: 'PLATE_NAME_BLACK', descKey: 'DESC_HAMA_BLACK' },
-    ],
+    plates: [],
     presets: [
       { id: 'drink', emoji: '🥤', price: 40, textKey: 'PRESET_HAMA_DRINK' },
       { id: 'tea', emoji: '🍵', price: 0, textKey: 'PRESET_HAMA_TEA' },
@@ -98,6 +95,7 @@ export const BRANDS: Record<BrandId, BrandDef> = {
     shortName: 'Katsu Midori',
     theme: 'katsumidori',
     taxType: 'plus_plus',
+    kind: 'plates',
     status: 'unverified',
     checkedAt: CHECKED_AT,
     noteKey: 'NOTE_KATSU',
@@ -107,13 +105,18 @@ export const BRANDS: Record<BrandId, BrandDef> = {
       'https://www.wongnai.com/restaurants/2916357Ds-katsu-midori-thailand-centralworld/reviews',
     ],
     plates: [
-      { id: 'white', color: 'white', price: 40, nameKey: 'PLATE_NAME_WHITE', descKey: 'DESC_KATSU_WHITE' },
-      { id: 'green', color: 'green', price: 50, nameKey: 'PLATE_NAME_GREEN', descKey: 'DESC_KATSU_GREEN' },
-      { id: 'blue', color: 'blue', price: 60, nameKey: 'PLATE_NAME_BLUE', descKey: 'DESC_KATSU_BLUE' },
-      { id: 'red', color: 'red', price: 80, nameKey: 'PLATE_NAME_RED', descKey: 'DESC_KATSU_RED' },
-      { id: 'silver', color: 'silver', price: 100, nameKey: 'PLATE_NAME_SILVER', descKey: 'DESC_KATSU_SILVER' },
-      { id: 'gold', color: 'gold', price: 120, nameKey: 'PLATE_NAME_GOLD', descKey: 'DESC_KATSU_GOLD' },
-      { id: 'black', color: 'black', price: 150, nameKey: 'PLATE_NAME_BLACK', descKey: 'DESC_KATSU_BLACK' },
+      { id: 'p40', color: 'red', price: 40, nameKey: 'KATSU_PLATE_40', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p50', color: 'blue', price: 50, nameKey: 'KATSU_PLATE_50', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p60', color: 'green', price: 60, nameKey: 'KATSU_PLATE_60', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p70', color: 'orange', price: 70, nameKey: 'KATSU_PLATE_70', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p80', color: 'brown', price: 80, nameKey: 'KATSU_PLATE_80', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p90', color: 'pink', price: 90, nameKey: 'KATSU_PLATE_90', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p100', color: 'gray', price: 100, nameKey: 'KATSU_PLATE_100', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p120', color: 'cream', price: 120, nameKey: 'KATSU_PLATE_120', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p140', color: 'crimson', price: 140, nameKey: 'KATSU_PLATE_140', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p150', color: 'gold', price: 150, nameKey: 'KATSU_PLATE_150', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p160', color: 'navy', price: 160, nameKey: 'KATSU_PLATE_160', descKey: 'PLATE_DESC_KATSU' },
+      { id: 'p180', color: 'black', price: 180, nameKey: 'KATSU_PLATE_180', descKey: 'PLATE_DESC_KATSU' },
     ],
     presets: [
       { id: 'tea', emoji: '🍵', price: 45, textKey: 'PRESET_KATSU_TEA' },
@@ -129,6 +132,7 @@ export const BRANDS: Record<BrandId, BrandDef> = {
     shortName: 'Ginza Onodera',
     theme: 'onodera',
     taxType: 'plus_plus',
+    kind: 'items',
     status: 'unverified',
     checkedAt: CHECKED_AT,
     noteKey: 'NOTE_ONODERA',
@@ -137,15 +141,7 @@ export const BRANDS: Record<BrandId, BrandDef> = {
       'https://www.kaohooninternational.com/?p=586907',
       'https://www.kaohooninternational.com/?p=576115',
     ],
-    plates: [
-      { id: 'white', color: 'white', price: 80, nameKey: 'PLATE_NAME_WHITE', descKey: 'DESC_ONODERA_WHITE' },
-      { id: 'blue', color: 'blue', price: 120, nameKey: 'PLATE_NAME_BLUE', descKey: 'DESC_ONODERA_BLUE' },
-      { id: 'green', color: 'green', price: 160, nameKey: 'PLATE_NAME_GREEN', descKey: 'DESC_ONODERA_GREEN' },
-      { id: 'red', color: 'red', price: 200, nameKey: 'PLATE_NAME_RED', descKey: 'DESC_ONODERA_RED' },
-      { id: 'silver', color: 'silver', price: 240, nameKey: 'PLATE_NAME_SILVER', descKey: 'DESC_ONODERA_SILVER' },
-      { id: 'gold', color: 'gold', price: 300, nameKey: 'PLATE_NAME_GOLD', descKey: 'DESC_ONODERA_GOLD' },
-      { id: 'black', color: 'black', price: 380, nameKey: 'PLATE_NAME_BLACK', descKey: 'DESC_ONODERA_BLACK' },
-    ],
+    plates: [],
     presets: [
       { id: 'tea', emoji: '🍵', price: 60, textKey: 'PRESET_ONODERA_TEA' },
       { id: 'miso', emoji: '🥣', price: 90, textKey: 'PRESET_ONODERA_MISO' },
@@ -160,18 +156,13 @@ export const BRANDS: Record<BrandId, BrandDef> = {
     shortName: 'GENKI SUSHI',
     theme: 'genki',
     taxType: 'vat_included',
+    kind: 'items',
     status: 'unverified',
     checkedAt: CHECKED_AT,
     noteKey: 'NOTE_GENKI',
     subKey: 'BRAND_SUB_GENKI',
     sources: ['https://www.wongnai.com/articles/genki-sushi'],
-    plates: [
-      { id: 'white', color: 'white', price: 30, nameKey: 'PLATE_NAME_WHITE', descKey: 'DESC_GENKI_WHITE' },
-      { id: 'orange', color: 'orange', price: 40, nameKey: 'PLATE_NAME_ORANGE', descKey: 'DESC_GENKI_ORANGE' },
-      { id: 'silver', color: 'silver', price: 60, nameKey: 'PLATE_NAME_SILVER', descKey: 'DESC_GENKI_SILVER' },
-      { id: 'gold', color: 'gold', price: 80, nameKey: 'PLATE_NAME_GOLD', descKey: 'DESC_GENKI_GOLD' },
-      { id: 'black', color: 'black', price: 100, nameKey: 'PLATE_NAME_BLACK', descKey: 'DESC_GENKI_BLACK' },
-    ],
+    plates: [],
     presets: [
       { id: 'tea', emoji: '🍵', price: 39, textKey: 'PRESET_GENKI_TEA' },
       { id: 'tea_free', emoji: '🫖', price: 0, textKey: 'PRESET_GENKI_TEA_FREE' },
@@ -182,3 +173,7 @@ export const BRANDS: Record<BrandId, BrandDef> = {
     ],
   },
 };
+
+// Brands priced by plate colour (counted in the sushi screen). The rest are priced per item on the split screen.
+export const PLATE_BRAND_ORDER: BrandId[] = BRAND_ORDER.filter((id) => BRANDS[id].kind === 'plates');
+export const ITEM_BRAND_ORDER: BrandId[] = BRAND_ORDER.filter((id) => BRANDS[id].kind === 'items');

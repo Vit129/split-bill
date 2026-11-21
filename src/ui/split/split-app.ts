@@ -2,6 +2,7 @@
 // collide with the sushi screen's delegated handlers.
 import { STRINGS } from '../../strings/th.ts';
 import { BILL_PRESETS } from '../../config/bill-presets.ts';
+import { BRANDS, type BrandId } from '../../config/brands.ts';
 import { defaultSplitData, loadSplit, saveSplit, type SplitData } from '../../integrations/split-storage.ts';
 import { computeSplit, type Category, type SplitItem, type TaxRule } from '../../logic/split.ts';
 import { evaluateExpression } from '../../logic/expr.ts';
@@ -34,6 +35,7 @@ function freshData(): SplitData {
 
 function freshUi(d: SplitData): SplitUi {
   return {
+    source: 'general',
     category: 'food',
     rule: 'bill',
     payers: d.people.map((p) => p.id),
@@ -168,10 +170,33 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
     ui = { ...ui, rule };
     render();
   },
+  source(el) {
+    const value = el.dataset['value'];
+    if (value === 'general' || value === undefined) {
+      ui = { ...ui, source: 'general' };
+      render();
+      return;
+    }
+    const id = value as BrandId;
+    const brand = BRANDS[id];
+    if (!brand) return;
+    // Brand menus show prices that already include VAT (vat_included) or add both (++); set the bill rates to match.
+    const plus = brand.taxType === 'plus_plus';
+    ui = { ...ui, source: id };
+    setSettings({ scRate: 10, vatRate: plus ? 7 : 0, compound: plus });
+  },
   preset(el) {
-    const preset = BILL_PRESETS[ui.category][Number(el.dataset['index'])];
-    if (!preset) return;
-    ui = { ...ui, nameDraftItem: txt(preset.key), priceDraft: String(preset.price), rule: preset.rule, itemError: '' };
+    const index = Number(el.dataset['index']);
+    if (ui.source === 'general') {
+      const preset = BILL_PRESETS[ui.category][index];
+      if (!preset) return;
+      ui = { ...ui, nameDraftItem: txt(preset.key), priceDraft: String(preset.price), rule: preset.rule, itemError: '' };
+    } else {
+      const preset = BRANDS[ui.source].presets[index];
+      if (!preset) return;
+      const text = STRINGS[preset.textKey as keyof typeof STRINGS] as unknown as { name: string };
+      ui = { ...ui, nameDraftItem: text.name, priceDraft: String(preset.price), rule: 'bill', itemError: '' };
+    }
     render();
   },
   payer(el) {

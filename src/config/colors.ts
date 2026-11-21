@@ -22,6 +22,12 @@ export const COLORS = {
     green: '#16A34A',
     blue: '#2563EB',
     orange: '#EA580C',
+    brown: '#78350F',
+    pink: '#EC4899',
+    gray: '#9CA3AF',
+    cream: '#FEF3C7',
+    crimson: '#9F1239',
+    navy: '#1E3A8A',
   },
   BRAND: {
     sushiro: { primary: '#D7000F', soft: '#FEF2F2', border: '#FECACA' },

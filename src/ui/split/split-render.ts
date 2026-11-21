@@ -4,6 +4,7 @@ import { esc } from '../../logic/escape.ts';
 import { formatBaht } from '../../logic/money.ts';
 import type { Category, PersonResult, SplitItem, SplitResult, SplitSettings, TaxRule } from '../../logic/split.ts';
 import { BILL_PRESETS } from '../../config/bill-presets.ts';
+import { BRANDS, ITEM_BRAND_ORDER, type BrandId } from '../../config/brands.ts';
 import type { SplitData, SplitPerson } from '../../integrations/split-storage.ts';
 
 type StringKey = keyof typeof STRINGS;
@@ -13,6 +14,7 @@ const fnStr = (key: StringKey) => STRINGS[key] as unknown as (...args: (string |
 const baht = (satang: number): string => formatBaht(satang);
 
 export interface SplitUi {
+  source: 'general' | BrandId;
   category: Category;
   rule: TaxRule;
   payers: string[];
@@ -90,12 +92,22 @@ function peopleCard(data: SplitData, ui: SplitUi): string {
 }
 
 function presetsRow(ui: SplitUi): string {
+  const sources = [
+    `<button type="button" class="${ui.source === 'general' ? 'is-active' : ''}" data-split-action="source" data-value="general" aria-pressed="${ui.source === 'general'}">${esc(txt('BILL_SOURCE_GENERAL'))}</button>`,
+    ...ITEM_BRAND_ORDER.map((id) => `<button type="button" class="${ui.source === id ? 'is-active' : ''}" data-split-action="source" data-value="${id}" aria-pressed="${ui.source === id}">${esc(BRANDS[id].shortName)}</button>`),
+  ].join('');
+  const chips = ui.source === 'general'
+    ? BILL_PRESETS[ui.category].map((p, i) => `
+      <button type="button" class="chip" data-split-action="preset" data-index="${i}">+ ${esc(txt(p.key))} (${p.price})</button>`).join('')
+    : BRANDS[ui.source].presets.map((p, i) => {
+        const text = STRINGS[p.textKey as StringKey] as unknown as { name: string };
+        return `<button type="button" class="chip" data-split-action="preset" data-index="${i}">+ ${esc(text.name)} (${p.price})</button>`;
+      }).join('');
   return `<div class="presets-row">
     <p class="label">${esc(txt('BILL_PRESETS'))}</p>
-    <div class="chips">${BILL_PRESETS[ui.category].map((p, i) => `
-      <button type="button" class="chip" data-split-action="preset" data-index="${i}">
-        + ${esc(txt(p.key))} (${p.price})
-      </button>`).join('')}</div>
+    <div class="segmented" role="group" aria-label="${esc(txt('BILL_SOURCE_LABEL'))}">${sources}</div>
+    ${ui.source === 'general' ? '' : `<p class="muted small">${esc(txt('BILL_SOURCE_NOTE'))}</p>`}
+    <div class="chips">${chips}</div>
   </div>`;
 }
 

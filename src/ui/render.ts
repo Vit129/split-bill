@@ -1,6 +1,6 @@
 // Markup builders. Pure: data in, HTML string out. Every user-typed value goes through esc().
 // Labels come only from strings/th.ts; no colour or font literals (they are CSS variables).
-import { BRAND_ORDER, BRANDS, type BrandDef, type BrandId } from '../config/brands.ts';
+import { PLATE_BRAND_ORDER, BRANDS, type BrandDef, type BrandId } from '../config/brands.ts';
 import { STRINGS } from '../strings/th.ts';
 import { esc } from '../logic/escape.ts';
 import { SHARE_ENABLED } from '../config/features.ts';
@@ -66,7 +66,7 @@ function header(view: View): string {
 
 function brandTabs(state: AppState): string {
   return `<nav class="brand-tabs" aria-label="${esc(STRINGS.BRAND_SECTION)}">
-    ${BRAND_ORDER.map((id: BrandId) => {
+    ${PLATE_BRAND_ORDER.map((id: BrandId) => {
       const b = BRANDS[id];
       const active = id === state.brandId;
       const count = brandPlateTotal(state, id);
