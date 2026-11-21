@@ -212,7 +212,8 @@ function personCard(p: PersonResult, data: SplitData, ui: SplitUi): string {
     </div>
     <div class="amt tabular">฿${baht(p.totalSatang)}</div>
     <div class="kv small muted"><span>${esc(txt('BILL_PART_FOOD'))}</span><span class="tabular">${baht(p.foodSatang)}</span></div>
-    <div class="kv small muted"><span>${esc(txt('BILL_PART_TAX'))}</span><span class="tabular">${baht(p.taxSatang)}</span></div>
+    <div class="kv small muted"><span>${esc(txt('BILL_PART_SC'))}</span><span class="tabular">${baht(p.scSatang)}</span></div>
+    <div class="kv small muted"><span>${esc(txt('BILL_PART_VAT'))}</span><span class="tabular">${baht(p.vatSatang)}</span></div>
     ${p.discountSatang > 0 ? `<div class="kv small ok"><span>${esc(txt('BILL_PART_DISCOUNT'))}</span><span class="tabular">-${baht(p.discountSatang)}</span></div>` : ''}
     <button type="button" class="link-btn" data-split-action="expand" data-id="${esc(p.id)}">${esc(open ? txt('BILL_HIDE_LINES') : txt('BILL_SHOW_LINES'))}</button>
     ${open ? `<div class="lines">${lines}</div>` : ''}
@@ -237,7 +238,8 @@ function summaryCard(data: SplitData, ui: SplitUi, result: SplitResult): string 
       <div><dt>${esc(txt('BILL_FOOD'))}</dt><dd>${baht(byCat('food'))}</dd></div>
       <div><dt>${esc(txt('BILL_DRINK'))}</dt><dd>${baht(byCat('drink'))}</dd></div>
       <div><dt>${esc(txt('BILL_ALCOHOL'))}</dt><dd>${baht(byCat('alcohol'))}</dd></div>
-      <div><dt>${esc(txt('BILL_TAX_TOTAL'))}</dt><dd>${baht(result.taxSatang)}</dd></div>
+      <div><dt>${esc(txt('BILL_SC_TOTAL'))}</dt><dd>${baht(result.scSatang)}</dd></div>
+      <div><dt>${esc(txt('BILL_VAT_TOTAL'))}</dt><dd>${baht(result.vatSatang)}</dd></div>
       ${result.discountSatang > 0 ? `<div class="good"><dt>${esc(txt('BILL_DISCOUNT_TOTAL'))}</dt><dd>-${baht(result.discountSatang)}</dd></div>` : ''}
     </dl>
     ${result.unassigned > 0 ? `<p class="level-warn small">${esc(fnStr('BILL_UNASSIGNED_NOTE')(result.unassigned))}</p>` : ''}

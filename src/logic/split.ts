@@ -1,6 +1,6 @@
 // Split bill: items with payers, per-item tax rules, discount, tax split and rounding.
-// Pure functions in integer satang. Every total is built from the same person rows, so the
-// per-person totals always add up to the bill.
+// Pure functions in integer satang. SC and VAT are tracked separately so the summary can show both.
+// Every total is built from the same person rows, so the per-person totals add up to the bill.
 import { allocate, mulRound, sum } from './money.ts';
 
 export type Category = 'food' | 'drink' | 'alcohol';
@@ -41,7 +41,8 @@ export interface PersonResult {
   drinkSatang: number;
   alcoholSatang: number;
   discountSatang: number;
-  taxSatang: number;
+  scSatang: number;
+  vatSatang: number;
   totalSatang: number;
   lines: PersonLine[];
 }
@@ -50,7 +51,8 @@ export interface SplitResult {
   persons: PersonResult[];
   grossSatang: number;
   discountSatang: number;
-  taxSatang: number;
+  scSatang: number;
+  vatSatang: number;
   totalSatang: number;
   unassigned: number;
 }
@@ -64,7 +66,7 @@ export function rateFor(rule: TaxRule, s: SplitSettings): { sc: number; vat: num
   }
 }
 
-// Equal discount that never takes more than a person's food: people who run out pass the rest on.
+// Equal discount that never takes more than a person ate: people who run out pass the rest on.
 function equalDiscount(total: number, foods: readonly number[]): number[] {
   const out = foods.map(() => 0);
   let open = foods.map((_, i) => i).filter((i) => (foods[i] ?? 0) > 0);
@@ -85,17 +87,21 @@ function equalDiscount(total: number, foods: readonly number[]): number[] {
 
 export function computeSplit(items: readonly SplitItem[], personIds: readonly string[], s: SplitSettings): SplitResult {
   const n = personIds.length;
+  if (n === 0) {
+    return { persons: [], grossSatang: 0, discountSatang: 0, scSatang: 0, vatSatang: 0, totalSatang: 0, unassigned: 0 };
+  }
   const index = new Map(personIds.map((id, i) => [id, i]));
   const food = personIds.map(() => 0);
-  const byCat: Record<Category, number[]> = { food: personIds.map(() => 0), drink: personIds.map(() => 0), alcohol: personIds.map(() => 0) };
-  const taxFull = personIds.map(() => 0);
+  const byCat: Record<Category, number[]> = {
+    food: personIds.map(() => 0),
+    drink: personIds.map(() => 0),
+    alcohol: personIds.map(() => 0),
+  };
+  const scFull = personIds.map(() => 0);
+  const vatFull = personIds.map(() => 0);
   const lines: PersonLine[][] = personIds.map(() => []);
   let gross = 0;
   let unassigned = 0;
-
-  if (n === 0) {
-    return { persons: [], grossSatang: 0, discountSatang: 0, taxSatang: 0, totalSatang: 0, unassigned: 0 };
-  }
 
   for (const item of items) {
     const base = item.unitSatang * item.qty;
@@ -113,7 +119,8 @@ export function computeSplit(items: readonly SplitItem[], personIds: readonly st
       const vat = mulRound(s.compound ? share + sc : share, rate.vat, 100);
       food[owner] = (food[owner] ?? 0) + share;
       byCat[item.category][owner] = (byCat[item.category][owner] ?? 0) + share;
-      taxFull[owner] = (taxFull[owner] ?? 0) + sc + vat;
+      scFull[owner] = (scFull[owner] ?? 0) + sc;
+      vatFull[owner] = (vatFull[owner] ?? 0) + vat;
       lines[owner]?.push({ itemId: item.id, name: item.name, category: item.category, shareSatang: share, splitCount: owners.length });
     });
   }
@@ -123,16 +130,18 @@ export function computeSplit(items: readonly SplitItem[], personIds: readonly st
     ? equalDiscount(discount, food)
     : allocate(discount, food);
 
-  // Tax is charged on what each person actually pays for food after the discount.
+  // SC and VAT are charged on what each person actually pays for food after the discount.
   const net = food.map((f, i) => f - (discountParts[i] ?? 0));
-  const taxNet = food.map((f, i) => (f > 0 ? mulRound(taxFull[i] ?? 0, net[i] ?? 0, f) : 0));
-  const taxParts = s.taxSplit === 'equal'
-    ? allocate(sum(taxNet), personIds.map(() => 1))
-    : taxNet;
+  const scNet = food.map((f, i) => (f > 0 ? mulRound(scFull[i] ?? 0, net[i] ?? 0, f) : 0));
+  const vatNet = food.map((f, i) => (f > 0 ? mulRound(vatFull[i] ?? 0, net[i] ?? 0, f) : 0));
+  const equal = personIds.map(() => 1);
+  const scParts = s.taxSplit === 'equal' ? allocate(sum(scNet), equal) : scNet;
+  const vatParts = s.taxSplit === 'equal' ? allocate(sum(vatNet), equal) : vatNet;
 
   const persons: PersonResult[] = personIds.map((id, i) => {
-    const tax = taxParts[i] ?? 0;
-    let total = (net[i] ?? 0) + tax;
+    const sc = scParts[i] ?? 0;
+    const vat = vatParts[i] ?? 0;
+    let total = (net[i] ?? 0) + sc + vat;
     if (s.roundUp) total = Math.ceil(total / 100) * 100;
     return {
       id,
@@ -140,7 +149,8 @@ export function computeSplit(items: readonly SplitItem[], personIds: readonly st
       drinkSatang: byCat.drink[i] ?? 0,
       alcoholSatang: byCat.alcohol[i] ?? 0,
       discountSatang: discountParts[i] ?? 0,
-      taxSatang: tax,
+      scSatang: sc,
+      vatSatang: vat,
       totalSatang: total,
       lines: lines[i] ?? [],
     };
@@ -150,7 +160,8 @@ export function computeSplit(items: readonly SplitItem[], personIds: readonly st
     persons,
     grossSatang: gross,
     discountSatang: discount,
-    taxSatang: sum(persons.map((p) => p.taxSatang)),
+    scSatang: sum(persons.map((p) => p.scSatang)),
+    vatSatang: sum(persons.map((p) => p.vatSatang)),
     totalSatang: sum(persons.map((p) => p.totalSatang)),
     unassigned,
   };

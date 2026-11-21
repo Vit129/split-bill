@@ -36,7 +36,7 @@ test('[BE-BL] per-person totals add up to the bill for random bills, with or wit
       taxSplit: run % 3 ? 'itemized' : 'equal',
     };
     const r = computeSplit(items, ids, settings);
-    assert.equal(r.totalSatang, r.grossSatang - r.discountSatang + r.taxSatang, `run ${run}`);
+    assert.equal(r.totalSatang, r.grossSatang - r.discountSatang + r.scSatang + r.vatSatang, `run ${run}`);
     for (const p of r.persons) {
       assert.ok(p.discountSatang <= p.foodSatang, `run ${run}: discount above food`);
       assert.ok(p.totalSatang >= 0, `run ${run}: negative total`);
@@ -75,7 +75,18 @@ test('[BE-UT] equal tax split pools SC/VAT and divides it evenly', () => {
   const items = [item('a1', 100, ['a']), item('b1', 300, ['b'])];
   const r = computeSplit(items, ['a', 'b'], { ...base, taxSplit: 'equal' });
   const [a, b] = r.persons;
-  assert.ok(Math.abs((a?.taxSatang ?? 0) - (b?.taxSatang ?? 0)) <= 1, 'equal shares differ by at most one satang');
-  assert.equal((a?.taxSatang ?? 0) + (b?.taxSatang ?? 0), r.taxSatang);
-  assert.ok(r.taxSatang > 0);
+  assert.ok(Math.abs((a?.scSatang ?? 0) - (b?.scSatang ?? 0)) <= 1, "equal SC shares differ by at most one satang");
+  assert.ok(Math.abs((a?.vatSatang ?? 0) - (b?.vatSatang ?? 0)) <= 1, "equal VAT shares differ by at most one satang");
+  assert.equal((a?.scSatang ?? 0) + (b?.scSatang ?? 0), r.scSatang);
+  assert.equal((a?.vatSatang ?? 0) + (b?.vatSatang ?? 0), r.vatSatang);
+  assert.ok(r.scSatang + r.vatSatang > 0);
+});
+
+test('[BE-IT] buffet 599 ฿ with bill rules: SC 59.90 and VAT 46.12 shown separately, total 705.02', () => {
+  const r = computeSplit([item('buffet', 599, ['a'])], ['a'], base);
+  assert.equal(r.scSatang, 5990);
+  assert.equal(r.vatSatang, 4612);
+  assert.equal(r.persons[0]?.scSatang, 5990);
+  assert.equal(r.persons[0]?.vatSatang, 4612);
+  assert.equal(r.totalSatang, 70502);
 });

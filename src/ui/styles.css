@@ -47,9 +47,26 @@ dl { margin: 0; }
 .layout { display: grid; gap: 16px; padding: 0 16px 120px; max-width: 1100px; margin: 0 auto; }
 .col-main { display: grid; gap: 16px; align-content: start; }
 .col-side { display: grid; align-content: start; }
-@media (min-width: 900px) {
+/* Breakpoints: phone < 600px, tablet 600–1023px (wider gutters, two columns of cards in
+   the split screen), desktop ≥ 1024px (entry column beside a sticky summary). */
+@media (min-width: 600px) {
+  .topbar, .brand-tabs, .banner { padding-left: 24px; padding-right: 24px; }
+  .layout { padding-left: 24px; padding-right: 24px; }
+  .card { padding: 20px; }
+  .persons { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 1024px) {
   .layout { grid-template-columns: 1.4fr 1fr; padding-bottom: 48px; }
-  .col-side { position: sticky; top: 96px; }
+  .col-side { position: sticky; top: calc(var(--shell-h) + 16px); }
+  .persons { grid-template-columns: 1fr; }
+}
+/* Touch screens: at least 44px targets and 16px inputs (stops iOS zoom on focus). */
+@media (pointer: coarse) {
+  .step, .icon-btn, .chip, .chip-btn, .btn, .icon-btn, .brand-tab, .segmented button, .menu button, .menu-btn {
+    min-height: 44px; min-width: 44px;
+  }
+  .step { width: 44px; height: 44px; }
+  .input, .field, select { font-size: var(--text-subtitle); min-height: 44px; }
 }
 
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 12px; }
@@ -131,7 +148,7 @@ dl { margin: 0; }
 .modal-small { width: min(360px, 100%); }
 .modal textarea.code { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--canvas); font-size: var(--text-micro); font-family: ui-monospace, monospace; word-break: break-all; resize: vertical; }
 
-.toast { position: fixed; left: 50%; top: 16px; transform: translateX(-50%) translateY(-8px); z-index: 60; opacity: 0; pointer-events: none; transition: opacity 200ms, transform 200ms; background: var(--ink); color: var(--surface); padding: 8px 14px; border-radius: 999px; font-size: var(--text-label); font-weight: 700; }
+.toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(8px); z-index: 60; opacity: 0; pointer-events: none; transition: opacity 200ms, transform 200ms; background: var(--ink); color: var(--surface); padding: 8px 14px; border-radius: 999px; font-size: var(--text-label); font-weight: 700; }
 .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ---- shell: menu bar and drawer ---- */
