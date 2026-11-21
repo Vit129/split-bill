@@ -7,12 +7,12 @@ Pattern: `~/.claude/skills/ai-sdlc/references/dev-qa-pattern.md` (Dev + QA). Lay
 | Layer | Folder | Holds | Rule |
 |---|---|---|---|
 | **BE** (headless core) | `src/logic/` | billing maths, cell merge, share-code decode, view model, summary text | no DOM, storage, network or WebRTC; no import from `ui/` or `integrations/` |
-| **Config (tokens)** | `src/config/` | `colors.js` (only hex), `typography.js` (only font sizes), `brands.js` (prices, tax type, source links) | data only |
-| **Translator** | `src/strings/th.js` | every Thai word | the only place Thai text may live |
-| **Integrations** | `src/integrations/` | `storage.js` (localStorage), `peer-sync.js` (WebRTC, copy-paste codes) | I/O only, no rules |
-| **FE** (presentation) | `src/ui/` | `render.js` (markup), `app.js` (events → cell writes), `styles.css` (var() only) | assembles; never computes a rule |
-| **QA guard** | `tests/architecture-guard.test.js` | static checks: no Thai outside strings, no hex outside colors, no numeric font sizes outside typography, logic purity, every key exists | fails CI on a breach |
-| **QA tests** | `tests/*.test.js`, `tests/fixtures/` | headless unit and matrix tests (`node:test`, zero deps) | fixtures hold data only |
+| **Config (tokens)** | `src/config/` | `colors.ts` (only hex), `typography.ts` (only font sizes), `brands.ts` (prices, tax type, source links) | data only |
+| **Translator** | `src/strings/th.ts` | every Thai word | the only place Thai text may live |
+| **Integrations** | `src/integrations/` | `storage.ts` (localStorage), `peer-sync.ts` (WebRTC, copy-paste codes) | I/O only, no rules |
+| **FE** (presentation) | `src/ui/` | `render.ts` (markup), `app.ts` (events → cell writes), `styles.css` (var() only) | assembles; never computes a rule |
+| **QA guard** | `tests/architecture-guard.test.ts` | static checks: no Thai outside strings, no hex outside colors, no numeric font sizes outside typography, logic purity, every key exists | fails CI on a breach |
+| **QA tests** | `tests/*.test.ts`, `tests/fixtures/` | headless unit and matrix tests (`node:test`, zero deps) | fixtures hold data only |
 
 Tags (`[LAYER-KIND]`): `[BE-UT]` one function, `[BE-BL]` a rule across steps, `[BE-IT]` two modules together, `[FE-UT]`/`[FE-IT]` for UI-facing checks.
 
@@ -31,7 +31,7 @@ Integer satang everywhere. `allocate()` (largest remainder) splits totals so sha
 
 - Person mode: the shared pool splits equally; the discount is spread in proportion to each person's gross food (never negative); the bill grand total is spread in proportion to each person's net food (or equally when `equalTaxSplit`).
 - Table mode: the grand total is split equally.
-- Tax formulas: see `src/logic/billing.js` header and README §"Tax rules".
+- Tax formulas: see `src/logic/billing.ts` header and README §"Tax rules".
 
 ## Share flow (no app server)
 
@@ -45,5 +45,5 @@ Only outside party: public STUN server `stun.l.google.com` (to learn addresses).
 ## Not done / open
 
 - `tests-web/` (browser E2E in the pattern) is not in the repo. Two-browser sync and layout smoke tests were run manually (see README §"Verified").
-- Plate prices are unverified for four of five brands (see `src/config/brands.js` `status` / `sources`). Editing prices in the app is not built.
-- Tax model for vat_included brands matches the reading in `billing.js`; confirm with one real receipt per brand.
+- Plate prices are unverified for four of five brands (see `src/config/brands.ts` `status` / `sources`). Editing prices in the app is not built.
+- Tax model for vat_included brands matches the reading in `billing.ts`; confirm with one real receipt per brand.

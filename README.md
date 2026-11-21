@@ -5,8 +5,9 @@ Bill calculator for conveyor-belt sushi in Thailand. Counts plates, adds extras,
 ## Run
 
 ```bash
-npm start          # http://localhost:5173  (ES modules need http, not file://)
-npm test           # 26 headless tests incl. architecture guard (Node 20+, no dependencies)
+npm run dev        # http://localhost:5173 (Vite dev server)
+npm run build      # tests + typecheck + static build into dist/
+npm test           # headless tests incl. architecture guard (Node 22.18+ runs .ts directly)
 ```
 
 ## Use
@@ -25,7 +26,7 @@ npm test           # 26 headless tests incl. architecture guard (Node 20+, no de
 
 ## Brand data: verification status (checked 2026-11-21)
 
-Every brand is marked `unverified` in `src/config/brands.js`, and the app shows a warning banner. Search results found:
+Every brand is marked `unverified` in `src/config/brands.ts`, and the app shows a warning banner. Search results found:
 
 | Brand | Found | Not confirmed |
 |---|---|---|
@@ -39,7 +40,7 @@ Reliable prices need a photo of the current menu or a receipt from each branch.
 
 ## Verified
 
-- 26/26 headless tests pass (`npm test`).
+- 28/28 headless tests pass (`npm test`); typecheck clean (`npm run typecheck`).
 - Browser smoke (headless Chromium, 390 px and desktop): renders with no console errors; brand switch; person mode; discount 40 with one red plate → 0.00 ฿; no horizontal overflow on a phone-sized screen.
 - Two-browser sync (separate contexts): offline counts merged to 132.00 ฿ on both sides (red 40 + gold 80, +10% SC); no duplicate people; live edit propagated (165.00 ฿ on both).
 - Not tested on two real phones over mobile data.

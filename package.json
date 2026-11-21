@@ -5,12 +5,19 @@
   "description": "Kaiten sushi bill calculator with copy-paste device sync (no server)",
   "type": "module",
   "scripts": {
-    "start": "node scripts/serve.js",
-    "dev": "node scripts/serve.js",
-    "build": "npm test && node scripts/build.js",
-    "test": "node --test \"tests/*.test.js\""
+    "dev": "vite",
+    "start": "vite",
+    "build": "npm test && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"tests/*.test.ts\""
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.18"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
   }
 }

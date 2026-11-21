@@ -1,13 +1,17 @@
-// Text for "copy and paste into LINE". Labels come from strings/th.js; amounts are formatted here.
-import { STRINGS } from '../strings/th.js';
-import { formatBaht } from './money.js';
+// Text for "copy and paste into LINE". Labels come from strings/th.ts; amounts are formatted here.
+import { STRINGS } from '../strings/th.ts';
+import { formatBaht } from './money.ts';
+import type { View } from './view-model.ts';
 
-export function buildSummaryText(view) {
+type PlateLine = { nameKey: string; count: number; price: number };
+
+export function buildSummaryText(view: View): string {
   const { brand, bill } = view;
-  const lines = [STRINGS.SUMMARY_HEADER(brand.shortName)];
-  for (const p of view.allPlates) {
+  const lines: string[] = [STRINGS.SUMMARY_HEADER(brand.shortName)];
+  for (const p of view.allPlates as readonly PlateLine[]) {
     if (p.count > 0) {
-      lines.push(STRINGS.SUMMARY_ITEM_ROW(STRINGS[p.nameKey], p.count, formatBaht(p.count * p.price * 100)));
+      const name = STRINGS[p.nameKey as keyof typeof STRINGS];
+      lines.push(STRINGS.SUMMARY_ITEM_ROW(String(name), p.count, formatBaht(p.count * p.price * 100)));
     }
   }
   for (const e of view.allExtras) {
@@ -22,7 +26,7 @@ export function buildSummaryText(view) {
   lines.push('------------------------');
   if (view.mode === 'table') {
     const n = view.equalShares.length;
-    const per = n > 0 ? formatBaht(view.equalShares[0].grandSatang) : formatBaht(0);
+    const per = n > 0 ? formatBaht(view.equalShares[0]?.grandSatang ?? 0) : formatBaht(0);
     lines.push(STRINGS.SUMMARY_EQUAL(n, per));
     for (const s of view.equalShares) lines.push(`- ${s.name}: ${formatBaht(s.grandSatang)}`);
   } else {

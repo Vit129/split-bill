@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decodeSignal, encodeSignal } from '../src/logic/share-code.js';
+import { decodeSignal, encodeSignal } from '../src/logic/share-code.ts';
 
 test('[BE-UT] invite code round-trips the session description', () => {
-  const desc = { type: 'offer', sdp: 'v=0\r\no=- 123 2 IN IP4 127.0.0.1\r\n' };
+  const desc = { type: 'offer' as const, sdp: 'v=0\r\no=- 123 2 IN IP4 127.0.0.1\r\n' };
   assert.deepEqual(decodeSignal(encodeSignal(desc)), desc);
 });
 

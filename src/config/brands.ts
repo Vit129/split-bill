@@ -2,11 +2,42 @@
 // referenced by *Key fields. status 'unverified' means prices and tax type were not
 // confirmed with the restaurant (see sources + checkedAt); the UI shows that.
 // taxType for katsumidori and onodera ('plus_plus') was confirmed by the user on 2026-11-21.
-export const BRAND_ORDER = ['sushiro', 'hama', 'katsumidori', 'onodera', 'genki'];
+export type BrandId = 'sushiro' | 'hama' | 'katsumidori' | 'onodera' | 'genki';
+
+export interface PlateDef {
+  id: string;
+  color: string;
+  price: number;
+  nameKey: string;
+  descKey: string;
+}
+
+export interface PresetDef {
+  id: string;
+  emoji: string;
+  price: number;
+  textKey: string;
+}
+
+export interface BrandDef {
+  id: BrandId;
+  shortName: string;
+  theme: BrandId;
+  taxType: 'vat_included' | 'plus_plus';
+  status: 'unverified' | 'verified';
+  checkedAt: string;
+  noteKey: string;
+  subKey: string;
+  sources: string[];
+  plates: PlateDef[];
+  presets: PresetDef[];
+}
+
+export const BRAND_ORDER: BrandId[] = ['sushiro', 'hama', 'katsumidori', 'onodera', 'genki'];
 
 const CHECKED_AT = '2026-11-21';
 
-export const BRANDS = {
+export const BRANDS: Record<BrandId, BrandDef> = {
   sushiro: {
     id: 'sushiro',
     shortName: 'Sushiro',

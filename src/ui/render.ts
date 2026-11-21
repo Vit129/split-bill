@@ -1,18 +1,46 @@
 // Markup builders. Pure: data in, HTML string out. Every user-typed value goes through esc().
-// Labels come only from strings/th.js; no colour or font literals (they are CSS variables).
-import { BRAND_ORDER, BRANDS } from '../config/brands.js';
-import { STRINGS } from '../strings/th.js';
-import { esc } from '../logic/escape.js';
-import { formatBaht } from '../logic/money.js';
-import { brandPlateTotal, budgetStatus } from '../logic/view-model.js';
+// Labels come only from strings/th.ts; no colour or font literals (they are CSS variables).
+import { BRAND_ORDER, BRANDS, type BrandDef, type BrandId } from '../config/brands.ts';
+import { STRINGS } from '../strings/th.ts';
+import { esc } from '../logic/escape.ts';
+import { formatBaht } from '../logic/money.ts';
+import { brandPlateTotal, budgetStatus, type PlateRow, type View } from '../logic/view-model.ts';
+import type { AppState } from '../logic/cells.ts';
 
-const baht = (satang) => formatBaht(satang);
-const taxBadge = (brand) => (brand.taxType === 'plus_plus' ? STRINGS.TAX_BADGE_PLUS_PLUS : STRINGS.TAX_BADGE_VAT_INCL);
-const plateName = (plate) => STRINGS[plate.nameKey];
-const brandSub = (brand) => STRINGS[brand.subKey];
-const subtotalLabel = (brand) => (brand.taxType === 'plus_plus' ? STRINGS.SUBTOTAL_PLUS_PLUS : STRINGS.SUBTOTAL_VAT_INCL);
+export interface ShareUi {
+  open: boolean;
+  tab: 'host' | 'guest';
+  status: string;
+  invite: string;
+  reply: string;
+  inviteDraft: string;
+  replyDraft: string;
+  busy: boolean;
+  error: string;
+}
 
-function header(state, view) {
+export interface UiState {
+  target: string | null;
+  taxOpen: boolean;
+  clearOpen: boolean;
+  share: ShareUi;
+}
+
+type StringKey = keyof typeof STRINGS;
+const txt = (key: string): string => String(STRINGS[key as StringKey]);
+const fn1 = (key: string) => STRINGS[key as StringKey] as (arg: never) => string;
+const baht = (satang: number): string => formatBaht(satang);
+const taxBadge = (brand: BrandDef): string =>
+  brand.taxType === 'plus_plus' ? STRINGS.TAX_BADGE_PLUS_PLUS : STRINGS.TAX_BADGE_VAT_INCL;
+const subtotalLabel = (brand: BrandDef): string =>
+  brand.taxType === 'plus_plus' ? STRINGS.SUBTOTAL_PLUS_PLUS : STRINGS.SUBTOTAL_VAT_INCL;
+
+function targetName(state: AppState, target: string): string {
+  if (target === 'shared') return STRINGS.SHARED_POOL;
+  return state.people.find((p) => p.id === target)?.name ?? '';
+}
+
+function header(view: View): string {
   const brand = view.brand;
   return `
   <header class="topbar">
@@ -22,7 +50,7 @@ function header(state, view) {
         <h1>${esc(brand.shortName)}</h1>
         <span class="chip chip-tax">${esc(taxBadge(brand))}</span>
       </div>
-      <p class="muted">${esc(brandSub(brand))}</p>
+      <p class="muted">${esc(txt(brand.subKey))}</p>
     </div>
     <div class="topbar-actions">
       <button class="btn btn-ghost" data-action="open-share" type="button">${esc(STRINGS.BTN_SHARE)}</button>
@@ -31,10 +59,13 @@ function header(state, view) {
   </header>
   ${brand.status === 'unverified' ? `<div class="banner banner-warn" role="note">
     <strong>${esc(STRINGS.BADGE_UNVERIFIED)}</strong> ${esc(STRINGS.BANNER_UNVERIFIED)}
-    <div class="muted small">${esc(STRINGS[brand.noteKey])} · ${esc(STRINGS.BANNER_CHECKED(brand.checkedAt))}</div>
-  </div>` : ''}
-  <nav class="brand-tabs" aria-label="${esc(STRINGS.BRAND_SECTION)}">
-    ${BRAND_ORDER.map((id) => {
+    <div class="muted small">${esc(txt(brand.noteKey))} · ${esc(STRINGS.BANNER_CHECKED(brand.checkedAt))}</div>
+  </div>` : ''}`;
+}
+
+function brandTabs(state: AppState): string {
+  return `<nav class="brand-tabs" aria-label="${esc(STRINGS.BRAND_SECTION)}">
+    ${BRAND_ORDER.map((id: BrandId) => {
       const b = BRANDS[id];
       const active = id === state.brandId;
       const count = brandPlateTotal(state, id);
@@ -48,7 +79,7 @@ function header(state, view) {
   </nav>`;
 }
 
-function budgetCard(view) {
+function budgetCard(view: View): string {
   const status = budgetStatus(view.bill.grandSatang, view.budget);
   let feedback = '';
   if (status) {
@@ -69,14 +100,23 @@ function budgetCard(view) {
   </section>`;
 }
 
-function modeCard(state, view) {
+// In table mode the chip is only a name field. In person mode it also selects the counting target.
+function personChip(person: { id: string; name: string }, selectable: boolean, active: boolean): string {
+  return `<div class="person-chip${active ? ' is-active' : ''}" ${selectable ? `data-action="target" data-target="${esc(person.id)}"` : ''}>
+    <input class="input input-name" type="text" maxlength="40" value="${esc(person.name)}"
+      placeholder="${esc(STRINGS.PERSON_NAME_PLACEHOLDER)}" aria-label="${esc(STRINGS.PERSON_NAME_LABEL)}"
+      data-change="person-name" data-person="${esc(person.id)}">
+    <button type="button" class="icon-btn" data-action="remove-person" data-person="${esc(person.id)}" aria-label="${esc(STRINGS.BTN_REMOVE_PERSON)}">✕</button>
+  </div>`;
+}
+
+function modeCard(state: AppState, view: View): string {
   const table = state.mode === 'table';
-  const people = state.people;
   const chips = table
-    ? people.map((p) => personChip(p, null)).join('')
+    ? state.people.map((p) => personChip(p, false, false)).join('')
     : `<button type="button" class="person-chip${view.target === 'shared' ? ' is-active' : ''}" data-action="target" data-target="shared">
          <span>${esc(STRINGS.SHARED_POOL)}</span>
-       </button>` + people.map((p) => personChip(p, view)).join('');
+       </button>` + state.people.map((p) => personChip(p, true, view.target === p.id)).join('');
   return `<section class="card">
     <div class="row-between">
       <h2>${esc(STRINGS.MODE_TITLE)}</h2>
@@ -93,42 +133,26 @@ function modeCard(state, view) {
   </section>`;
 }
 
-function targetName(state, target) {
-  if (target === 'shared') return STRINGS.SHARED_POOL;
-  return state.people.find((p) => p.id === target)?.name ?? '';
-}
-
-// In table mode the chip is only a name field. In person mode it also selects the counting target.
-function personChip(person, view) {
-  const active = view && view.target === person.id;
-  return `<div class="person-chip${active ? ' is-active' : ''}" ${view ? `data-action="target" data-target="${esc(person.id)}"` : ''}>
-    <input class="input input-name" type="text" maxlength="40" value="${esc(person.name)}"
-      placeholder="${esc(STRINGS.PERSON_NAME_PLACEHOLDER)}" aria-label="${esc(STRINGS.PERSON_NAME_LABEL)}"
-      data-change="person-name" data-person="${esc(person.id)}">
-    <button type="button" class="icon-btn" data-action="remove-person" data-person="${esc(person.id)}" aria-label="${esc(STRINGS.BTN_REMOVE_PERSON)}">✕</button>
-  </div>`;
-}
-
-function platesCard(state, view) {
-  const rows = view.plateRows.map((p) => {
-    const name = plateName(p);
+function platesCard(state: AppState, view: View): string {
+  const rows = view.plateRows.map((p: PlateRow) => {
+    const name = txt(p.nameKey);
     const total = p.count * p.price * 100;
     return `<div class="plate-row${p.count > 0 ? ' is-active' : ''}">
       <div class="plate-main">
         <span class="plate-swatch" style="--plate-fill: var(--plate-${p.color})" aria-hidden="true"><span class="plate-inner">${p.price}฿</span></span>
         <div>
           <h3>${esc(name)} <span class="price-tag">${p.price} ฿</span></h3>
-          <p class="muted small">${esc(STRINGS[p.descKey])}</p>
+          <p class="muted small">${esc(txt(p.descKey))}</p>
           ${p.count > 0 ? `<p class="accent small">${esc(STRINGS.PLATE_LINE_TOTAL(baht(total)))}</p>` : ''}
         </div>
       </div>
       <div class="stepper">
         <button type="button" class="step" data-action="plate" data-plate="${p.id}" data-delta="-1"
-          aria-label="${esc(STRINGS.PLATE_DECREASE(name))}">−</button>
+          aria-label="${esc(fn1('PLATE_DECREASE')(name as never))}">−</button>
         <input class="input input-count" type="number" min="0" max="999" inputmode="numeric" value="${p.count}"
           aria-label="${esc(name)}" data-change="plate-input" data-plate="${p.id}">
         <button type="button" class="step step-primary" data-action="plate" data-plate="${p.id}" data-delta="1"
-          aria-label="${esc(STRINGS.PLATE_INCREASE(name))}">+</button>
+          aria-label="${esc(fn1('PLATE_INCREASE')(name as never))}">+</button>
       </div>
     </div>`;
   }).join('');
@@ -143,9 +167,9 @@ function platesCard(state, view) {
   </section>`;
 }
 
-function extrasCard(view) {
+function extrasCard(view: View): string {
   const presets = view.brand.presets.map((preset, index) => {
-    const text = STRINGS[preset.textKey];
+    const text = STRINGS[preset.textKey as StringKey] as unknown as { name: string; sub: string };
     return `<button type="button" class="preset" data-action="preset" data-index="${index}">
       <span class="preset-top"><span aria-hidden="true">${preset.emoji}</span>
       <span class="preset-price">${preset.price === 0 ? '0 ฿' : `+${preset.price} ฿`}</span></span>
@@ -159,10 +183,10 @@ function extrasCard(view) {
         <div class="muted small">${baht(e.price * 100)} ฿ × ${e.qty} = ${baht(e.price * e.qty * 100)} ฿</div></div>
       <div class="stepper">
         <button type="button" class="step" data-action="extra" data-id="${esc(e.id)}" data-delta="-1"
-          aria-label="${esc(STRINGS.EXTRA_DECREASE(e.name))}">−</button>
+          aria-label="${esc(fn1('EXTRA_DECREASE')(e.name as never))}">−</button>
         <span class="qty">${e.qty}</span>
         <button type="button" class="step step-primary" data-action="extra" data-id="${esc(e.id)}" data-delta="1"
-          aria-label="${esc(STRINGS.EXTRA_INCREASE(e.name))}">+</button>
+          aria-label="${esc(fn1('EXTRA_INCREASE')(e.name as never))}">+</button>
       </div>
     </div>`).join('');
   return `<section class="card">
@@ -170,16 +194,45 @@ function extrasCard(view) {
     <p class="muted small">${esc(STRINGS.EXTRAS_HINT)}</p>
     <div class="presets">${presets}</div>
     <form class="custom-form" data-form="custom">
-      <input class="input" name="name" type="text" maxlength="60" placeholder="${esc(STRINGS.EXTRA_NAME_PLACEHOLDER)}">
-      <input class="input input-num" name="price" type="number" min="0" step="1" required placeholder="${esc(STRINGS.EXTRA_PRICE_PLACEHOLDER)}">
-      <input class="input input-count" name="qty" type="number" min="1" max="99" value="1" aria-label="${esc(STRINGS.EXTRA_QTY_LABEL)}">
+      <input class="input" name="extraName" type="text" maxlength="60" placeholder="${esc(STRINGS.EXTRA_NAME_PLACEHOLDER)}">
+      <input class="input input-num" name="extraPrice" type="number" min="0" step="1" required placeholder="${esc(STRINGS.EXTRA_PRICE_PLACEHOLDER)}">
+      <input class="input input-count" name="extraQty" type="number" min="1" max="99" value="1" aria-label="${esc(STRINGS.EXTRA_QTY_LABEL)}">
       <button class="btn btn-primary" type="submit">${esc(STRINGS.BTN_ADD_EXTRA)}</button>
     </form>
     <div class="extras">${list}</div>
   </section>`;
 }
 
-function receiptCard(state, view, taxOpen) {
+function tableSplit(state: AppState, view: View): string {
+  const rows = view.equalShares.map((s) => `<div class="split-row"><span>${esc(s.name)}</span>
+    <strong>${baht(s.grandSatang)} ฿</strong></div>`).join('');
+  const per = view.equalShares[0] ? baht(view.equalShares[0].grandSatang) : baht(0);
+  return `<div class="split">
+    <div class="row-between"><h3>${esc(STRINGS.SPLIT_EQUAL_TITLE)} ${esc(STRINGS.PEOPLE_COUNT(state.people.length))}</h3>
+      <span class="small muted">${esc(STRINGS.SPLIT_PER_PERSON)} ${per} ฿</span></div>
+    ${rows}
+  </div>`;
+}
+
+function personSplit(state: AppState, view: View): string {
+  const rows = view.shares.map((s) => `<div class="share-card">
+    <div class="row-between"><strong>${esc(s.name)} <span class="muted small">${esc(STRINGS.SPLIT_PLATES(s.plateCount))}</span></strong>
+      <strong class="accent">${baht(s.grandSatang)} ฿</strong></div>
+    <p class="muted small">${esc(STRINGS.SPLIT_FOOD)} ${baht(s.personalSatang + s.sharedSatang)}
+      ${s.sharedSatang > 0 ? ` (${esc(STRINGS.SPLIT_SHARED)} ${baht(s.sharedSatang)})` : ''}
+      ${s.discountSatang > 0 ? ` · ${esc(STRINGS.SPLIT_DISCOUNT)} -${baht(s.discountSatang)}` : ''}
+      · ${esc(STRINGS.SPLIT_ADDED)} ${baht(s.addedSatang)}</p>
+  </div>`).join('');
+  return `<div class="split">
+    <div class="row-between"><h3>${esc(STRINGS.SPLIT_INDIVIDUAL_TITLE)}</h3>
+      <label class="toggle small"><input type="checkbox" data-change="equal-tax" ${state.equalTaxSplit ? 'checked' : ''}>
+        ${esc(STRINGS.EQUAL_TAX_SPLIT)}</label></div>
+    <p class="muted small">${esc(state.equalTaxSplit ? STRINGS.TAX_MODE_EQUAL : STRINGS.TAX_MODE_PROPORTIONAL)}</p>
+    ${rows}
+  </div>`;
+}
+
+function receiptCard(state: AppState, view: View, taxOpen: boolean): string {
   const { bill, brand } = view;
   const empty = view.plateTotal === 0 && view.extraQty === 0;
   const perPlate = view.plateTotal > 0 ? baht(Math.round(bill.grandSatang / view.plateTotal)) : null;
@@ -225,37 +278,9 @@ function receiptCard(state, view, taxOpen) {
   </section>`;
 }
 
-function tableSplit(state, view) {
-  const rows = view.equalShares.map((s) => `<div class="split-row"><span>${esc(s.name)}</span>
-    <strong>${baht(s.grandSatang)} ฿</strong></div>`).join('');
-  const per = view.equalShares[0] ? baht(view.equalShares[0].grandSatang) : baht(0);
-  return `<div class="split">
-    <div class="row-between"><h3>${esc(STRINGS.SPLIT_EQUAL_TITLE)} ${esc(STRINGS.PEOPLE_COUNT(state.people.length))}</h3>
-      <span class="small muted">${esc(STRINGS.SPLIT_PER_PERSON)} ${per} ฿</span></div>
-    ${rows}
-  </div>`;
-}
-
-function personSplit(state, view) {
-  const rows = view.shares.map((s) => `<div class="share-card">
-    <div class="row-between"><strong>${esc(s.name)} <span class="muted small">${esc(STRINGS.SPLIT_PLATES(s.plateCount))}</span></strong>
-      <strong class="accent">${baht(s.grandSatang)} ฿</strong></div>
-    <p class="muted small">${esc(STRINGS.SPLIT_FOOD)} ${baht(s.personalSatang + s.sharedSatang)}
-      ${s.sharedSatang > 0 ? ` (${esc(STRINGS.SPLIT_SHARED)} ${baht(s.sharedSatang)})` : ''}
-      ${s.discountSatang > 0 ? ` · ${esc(STRINGS.SPLIT_DISCOUNT)} -${baht(s.discountSatang)}` : ''}
-      · ${esc(STRINGS.SPLIT_ADDED)} ${baht(s.addedSatang)}</p>
-  </div>`).join('');
-  return `<div class="split">
-    <div class="row-between"><h3>${esc(STRINGS.SPLIT_INDIVIDUAL_TITLE)}</h3>
-      <label class="toggle small"><input type="checkbox" data-change="equal-tax" ${state.equalTaxSplit ? 'checked' : ''}>
-        ${esc(STRINGS.EQUAL_TAX_SPLIT)}</label></div>
-    <p class="muted small">${esc(state.equalTaxSplit ? STRINGS.TAX_MODE_EQUAL : STRINGS.TAX_MODE_PROPORTIONAL)}</p>
-    ${rows}
-  </div>`;
-}
-
-export function renderBody(state, view, ui) {
-  return `${header(state, view)}
+export function renderBody(state: AppState, view: View, ui: UiState): string {
+  return `${header(view)}
+  ${brandTabs(state)}
   <main class="layout">
     <div class="col-main">
       ${budgetCard(view)}
@@ -268,7 +293,7 @@ export function renderBody(state, view, ui) {
 }
 
 // Share dialog. Draft text is kept in ui state so a re-render does not wipe what the user pasted.
-export function renderShare(share, sessionActive) {
+export function renderShare(share: ShareUi, sessionActive: boolean): string {
   const tab = share.tab;
   const body = tab === 'host'
     ? `<p class="hint">${esc(STRINGS.SHARE_HOST_STEP1)}</p>
@@ -287,14 +312,15 @@ export function renderShare(share, sessionActive) {
             <textarea class="code" readonly rows="4">${esc(share.reply)}</textarea>
             <button type="button" class="btn btn-outline" data-action="copy-code" data-code="reply">${esc(STRINGS.BTN_COPY_CODE)}</button>`
          : ''}`;
-  const statusText = {
+  const statusKeys: Record<string, string> = {
     idle: STRINGS.SHARE_STATUS_IDLE,
     waiting: STRINGS.SHARE_STATUS_WAITING,
     connecting: STRINGS.SHARE_STATUS_CONNECTING,
     connected: STRINGS.SHARE_STATUS_CONNECTED,
     failed: STRINGS.SHARE_STATUS_FAILED,
     closed: STRINGS.SHARE_STATUS_IDLE,
-  }[share.status] ?? STRINGS.SHARE_STATUS_IDLE;
+  };
+  const statusText = statusKeys[share.status] ?? STRINGS.SHARE_STATUS_IDLE;
   return `<div class="modal-backdrop" data-action="close-share-backdrop">
     <section class="modal" role="dialog" aria-modal="true" aria-label="${esc(STRINGS.SHARE_TITLE)}">
       <div class="row-between"><h2>${esc(STRINGS.SHARE_TITLE)}</h2>
@@ -306,13 +332,13 @@ export function renderShare(share, sessionActive) {
       </div>
       ${body}
       ${share.error ? `<p class="level-over small">${esc(share.error)}</p>` : ''}
-      <p class="status status-${share.status}">${esc(statusText)}</p>
+      <p class="status status-${esc(share.status)}">${esc(statusText)}</p>
       ${sessionActive ? `<button type="button" class="btn btn-soft" data-action="disconnect">${esc(STRINGS.BTN_DISCONNECT)}</button>` : ''}
     </section>
   </div>`;
 }
 
-export function renderClear(brand) {
+export function renderClear(brand: BrandDef): string {
   return `<div class="modal-backdrop" data-action="close-clear-backdrop">
     <section class="modal modal-small" role="dialog" aria-modal="true" aria-label="${esc(STRINGS.CLEAR_TITLE)}">
       <h2>${esc(STRINGS.CLEAR_TITLE)}</h2>

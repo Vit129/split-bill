@@ -1,21 +1,22 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { deriveState, isValidCell, mergeCells, setCell } from '../src/logic/cells.js';
+import { deriveState, isValidCell, mergeCells, setCell, type Cells } from '../src/logic/cells.ts';
 
-const base = {};
+const base: Cells = {};
 
 test('[BE-UT] setCell never moves a key’s time backwards', () => {
   const a = setCell(base, 'cfg:mode', 'person', 1000);
   const b = setCell(a, 'cfg:mode', 'table', 500);
-  assert.equal(b['cfg:mode'].t, 1001);
-  assert.equal(b['cfg:mode'].v, 'table');
+  assert.equal(b['cfg:mode']?.t, 1001);
+  assert.equal(b['cfg:mode']?.v, 'table');
 });
 
 test('[BE-BL] merge keeps the newer cell per key, whichever device sends it', () => {
-  const phone = setCell(base, 'brand:sushiro:plate:table:red', 2, 1000);
-  const tablet = setCell(base, 'brand:sushiro:plate:table:red', 5, 2000);
-  assert.equal(mergeCells(phone, tablet).cells['brand:sushiro:plate:table:red'].v, 5);
-  assert.equal(mergeCells(tablet, phone).cells['brand:sushiro:plate:table:red'].v, 5);
+  const key = 'brand:sushiro:plate:table:red';
+  const phone = setCell(base, key, 2, 1000);
+  const tablet = setCell(base, key, 5, 2000);
+  assert.equal(mergeCells(phone, tablet).cells[key]?.v, 5);
+  assert.equal(mergeCells(tablet, phone).cells[key]?.v, 5);
 });
 
 test('[BE-BL] merge is order-independent and idempotent', () => {
@@ -36,7 +37,7 @@ test('[BE-BL] a deletion (tombstone) from the other device wins when it is newer
 });
 
 test('[BE-UT] rejects malformed cells from another device (trust boundary)', () => {
-  const bad = {
+  const bad: Cells = {
     'brand:sushiro:plate:table:red': { v: -1, t: 1 },
     'brand:nope:plate:table:red': { v: 1, t: 1 },
     'brand:sushiro:plate:table:unknown': { v: 1, t: 1 },
@@ -52,7 +53,7 @@ test('[BE-UT] rejects malformed cells from another device (trust boundary)', () 
 });
 
 test('[BE-UT] rejects a payload with too many cells', () => {
-  const huge = {};
+  const huge: Record<string, { v: number; t: number }> = {};
   for (let i = 0; i < 5001; i += 1) huge[`brand:sushiro:plate:table:red${i}`] = { v: 1, t: 1 };
   assert.equal(mergeCells(base, huge).changed, false);
 });

@@ -1,21 +1,28 @@
 // Controller: turns DOM events into cell writes, then re-renders from the cells.
 // The only module that touches the DOM globals, storage and WebRTC together.
-import { BRAND_ORDER, BRANDS } from '../config/brands.js';
-import { COLORS } from '../config/colors.js';
-import { TYPOGRAPHY } from '../config/typography.js';
-import { STRINGS } from '../strings/th.js';
-import { loadCells, saveCells } from '../integrations/storage.js';
-import * as sync from '../integrations/peer-sync.js';
-import { deriveState, mergeCells, setCell } from '../logic/cells.js';
-import { buildView, ownersFor } from '../logic/view-model.js';
-import { buildSummaryText } from '../logic/bill-text.js';
-import { renderBody, renderClear, renderShare } from './render.js';
+import { BRAND_ORDER, BRANDS, type BrandId } from '../config/brands.ts';
+import { COLORS } from '../config/colors.ts';
+import { TYPOGRAPHY } from '../config/typography.ts';
+import { STRINGS } from '../strings/th.ts';
+import { loadCells, saveCells } from '../integrations/storage.ts';
+import * as sync from '../integrations/peer-sync.ts';
+import type { SyncHooks, SyncSession } from '../integrations/peer-sync.ts';
+import { deriveState, mergeCells, setCell, type AppState, type Cells } from '../logic/cells.ts';
+import { buildView, ownersFor, type View } from '../logic/view-model.ts';
+import { buildSummaryText } from '../logic/bill-text.ts';
+import { renderBody, renderClear, renderShare, type UiState } from './render.ts';
 
-const root = document.getElementById('app');
-const modalRoot = document.getElementById('modal-root');
-const toastEl = document.getElementById('toast');
+function byId<T extends HTMLElement>(id: string): T {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`Missing element #${id}`);
+  return el as T;
+}
 
-const ui = {
+const root = byId<HTMLElement>('app');
+const modalRoot = byId<HTMLElement>('modal-root');
+const toastEl = byId<HTMLElement>('toast');
+
+const ui: UiState = {
   target: null, // person-mode counting target; device-local, not shared
   taxOpen: false,
   clearOpen: false,
@@ -32,41 +39,40 @@ const ui = {
   },
 };
 
-let cells = loadCells();
-let session = null; // { send, close, acceptReply? } for the active share connection
+let cells: Cells = loadCells();
+let session: SyncSession | null = null; // the active share connection
 
-const randomId = (len) => Math.random().toString(36).slice(2, 2 + len).padEnd(len, '0');
-const newPersonId = () => `p_${randomId(8)}`;
-const newExtraId = () => `${Date.now().toString(36)}${randomId(4)}`;
+const randomId = (len: number): string => Math.random().toString(36).slice(2, 2 + len).padEnd(len, '0');
+const newPersonId = (): string => `p_${randomId(8)}`;
+const newExtraId = (): string => `${Date.now().toString(36)}${randomId(4)}`;
 const cellsKey = {
-  brandField: (b, f) => `brand:${b}:${f}`,
-  plate: (b, owner, plate) => `brand:${b}:plate:${owner}:${plate}`,
-  extra: (b, id) => `brand:${b}:extra:${id}`,
-  person: (id) => `person:${id}`,
+  brandField: (b: BrandId, f: string): string => `brand:${b}:${f}`,
+  plate: (b: BrandId, owner: string, plate: string): string => `brand:${b}:plate:${owner}:${plate}`,
+  extra: (b: BrandId, id: string): string => `brand:${b}:extra:${id}`,
+  person: (id: string): string => `person:${id}`,
 };
 
-const state = () => deriveState(cells);
+const currentState = (): AppState => deriveState(cells);
 
 // Person mode counts into one owner at a time. Falls back to the first person.
-function currentOwner(s) {
+function currentOwner(s: AppState): string {
   if (s.mode === 'table') return 'table';
-  if (!ownersFor(s).includes(ui.target)) ui.target = s.people[0]?.id ?? 'shared';
-  return ui.target;
+  if (!ownersFor(s).includes(ui.target ?? '')) ui.target = s.people[0]?.id ?? 'shared';
+  return ui.target ?? 'shared';
 }
 
-const extrasOwner = (s) => (s.mode === 'table' ? 'table' : currentOwner(s));
+const extrasOwner = (s: AppState): string => (s.mode === 'table' ? 'table' : currentOwner(s));
 
-function currentView() {
-  const s = state();
+function currentView(): View {
+  const s = currentState();
   return buildView(s, currentOwner(s));
 }
 
-function applyTokens(brandId) {
+function applyTokens(brandId: BrandId): void {
   const style = document.documentElement.style;
   for (const [name, hex] of Object.entries(COLORS.PLATE)) style.setProperty(`--plate-${name}`, hex);
   for (const id of BRAND_ORDER) {
-    const t = COLORS.BRAND[BRANDS[id].theme];
-    style.setProperty(`--brand-${id}-primary`, t.primary);
+    style.setProperty(`--brand-${id}-primary`, COLORS.BRAND[BRANDS[id].theme].primary);
   }
   const current = COLORS.BRAND[BRANDS[brandId].theme];
   style.setProperty('--brand-primary', current.primary);
@@ -76,25 +82,25 @@ function applyTokens(brandId) {
   for (const [name, size] of Object.entries(TYPOGRAPHY)) {
     if (name !== 'FONT_STACK') style.setProperty(`--${name.toLowerCase().replace(/_/g, '-')}`, size);
   }
-  for (const [name, hex] of Object.entries(COLORS)) {
-    if (typeof hex === 'string') style.setProperty(`--${name.toLowerCase().replace(/_/g, '-')}`, hex);
+  for (const [name, value] of Object.entries(COLORS)) {
+    if (typeof value === 'string') style.setProperty(`--${name.toLowerCase().replace(/_/g, '-')}`, value);
   }
 }
 
-function render() {
-  const s = state();
+function render(): void {
+  const s = currentState();
   const view = buildView(s, currentOwner(s));
   applyTokens(s.brandId);
   root.innerHTML = renderBody(s, view, ui);
   modalRoot.innerHTML = [
-    ui.share.open ? renderShare(ui.share, Boolean(session)) : '',
+    ui.share.open ? renderShare(ui.share, session !== null) : '',
     ui.clearOpen ? renderClear(BRANDS[s.brandId]) : '',
   ].join('');
   document.title = `${STRINGS.APP_TITLE} • ${BRANDS[s.brandId].shortName}`;
 }
 
-let toastTimer = null;
-function toast(message) {
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
+function toast(message: string): void {
   toastEl.textContent = message;
   toastEl.classList.add('is-visible');
   clearTimeout(toastTimer);
@@ -102,15 +108,15 @@ function toast(message) {
 }
 
 // One place that writes cells: stores locally, pushes to the connected device, re-renders.
-function commit(changes) {
+function commit(changes: [string, unknown][]): void {
   const now = Date.now();
-  cells = changes.reduce((acc, [key, value]) => setCell(acc, key, value, now), cells);
+  cells = changes.reduce<Cells>((acc, [key, value]) => setCell(acc, key, value, now), cells);
   saveCells(cells);
   session?.send(cells);
   render();
 }
 
-function applyRemote(remote) {
+function applyRemote(remote: unknown): void {
   const result = mergeCells(cells, remote);
   if (result.rejected > 0) toast(STRINGS.TOAST_REJECTED(result.rejected));
   if (result.changed) {
@@ -121,7 +127,7 @@ function applyRemote(remote) {
   }
 }
 
-function shareHooks() {
+function shareHooks(): SyncHooks {
   return {
     getCells: () => cells,
     onCells: applyRemote,
@@ -138,8 +144,8 @@ function shareHooks() {
   };
 }
 
-function addExtra(name, price, qty) {
-  const s = state();
+function addExtra(name: string, price: number, qty: number): void {
+  const s = currentState();
   const brandId = s.brandId;
   const owner = extrasOwner(s);
   const existing = s.brands[brandId].extras.find(
@@ -153,27 +159,27 @@ function addExtra(name, price, qty) {
   toast(STRINGS.TOAST_EXTRA_ADDED(name));
 }
 
-function setPlate(brandId, owner, plateId, count) {
+function setPlate(brandId: BrandId, owner: string, plateId: string, count: number): void {
   commit([[cellsKey.plate(brandId, owner, plateId), count]]);
 }
 
 // Removing a person keeps their dishes and extras on the bill by moving them to the shared pool.
-function removePerson(personId) {
-  const s = state();
+function removePerson(personId: string): void {
+  const s = currentState();
   if (s.people.length <= 1) {
     toast(STRINGS.ERR_LAST_PERSON);
     return;
   }
-  const changes = [[cellsKey.person(personId), null]];
   const removed = s.people.find((p) => p.id === personId);
+  const changes: [string, unknown][] = [[cellsKey.person(personId), null]];
   for (const brandId of BRAND_ORDER) {
     const data = s.brands[brandId];
-    const personCounts = data.plates[personId] || {};
-    const sharedCounts = data.plates.shared || {};
+    const personCounts = data.plates[personId] ?? {};
+    const sharedCounts = data.plates['shared'] ?? {};
     for (const plate of BRANDS[brandId].plates) {
-      const moved = personCounts[plate.id] || 0;
+      const moved = personCounts[plate.id] ?? 0;
       if (moved > 0) {
-        changes.push([cellsKey.plate(brandId, 'shared', plate.id), Math.min(999, (sharedCounts[plate.id] || 0) + moved)]);
+        changes.push([cellsKey.plate(brandId, 'shared', plate.id), Math.min(999, (sharedCounts[plate.id] ?? 0) + moved)]);
       }
       if (personCounts[plate.id] !== undefined) changes.push([cellsKey.plate(brandId, personId, plate.id), null]);
     }
@@ -183,16 +189,16 @@ function removePerson(personId) {
   }
   commit(changes);
   if (ui.target === personId) ui.target = null;
-  toast(STRINGS.TOAST_PERSON_REMOVED(removed.name));
+  toast(STRINGS.TOAST_PERSON_REMOVED(removed?.name ?? ''));
 }
 
-function clearBrand(brandId) {
-  const changes = [
+function clearBrand(brandId: BrandId): void {
+  const changes: [string, unknown][] = [
     [cellsKey.brandField(brandId, 'discount'), 0],
     [cellsKey.brandField(brandId, 'sc'), true],
   ];
   for (const key of Object.keys(cells)) {
-    if (cells[key].v === null) continue;
+    if (cells[key]?.v === null) continue;
     if (key.startsWith(`brand:${brandId}:plate:`) || key.startsWith(`brand:${brandId}:extra:`)) {
       changes.push([key, null]);
     }
@@ -202,7 +208,7 @@ function clearBrand(brandId) {
   toast(STRINGS.TOAST_CLEARED(BRANDS[brandId].shortName));
 }
 
-async function copyText(text, okMessage) {
+async function copyText(text: string, okMessage: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
     toast(okMessage);
@@ -212,7 +218,7 @@ async function copyText(text, okMessage) {
   }
 }
 
-async function copySummary() {
+async function copySummary(): Promise<void> {
   const view = currentView();
   if (view.plateTotal === 0 && view.extraQty === 0) {
     toast(STRINGS.TOAST_EMPTY_BILL);
@@ -221,13 +227,13 @@ async function copySummary() {
   await copyText(buildSummaryText(view), STRINGS.TOAST_COPIED);
 }
 
-const parseIntInRange = (raw, min, max) => {
+const parseIntInRange = (raw: string, min: number, max: number): number => {
   const n = Number.parseInt(raw, 10);
   if (!Number.isFinite(n)) return min;
   return Math.min(max, Math.max(min, n));
 };
 
-async function createInvite() {
+async function createInvite(): Promise<void> {
   ui.share.busy = true;
   ui.share.error = '';
   render();
@@ -248,7 +254,7 @@ async function createInvite() {
   }
 }
 
-async function acceptReply() {
+async function acceptReply(): Promise<void> {
   if (!session?.acceptReply) {
     ui.share.error = STRINGS.SHARE_HOST_STEP1;
     render();
@@ -265,7 +271,7 @@ async function acceptReply() {
   render();
 }
 
-async function joinInvite() {
+async function joinInvite(): Promise<void> {
   ui.share.busy = true;
   ui.share.error = '';
   render();
@@ -278,65 +284,70 @@ async function joinInvite() {
     ui.share.status = 'connecting';
   } catch (err) {
     console.warn('Join failed:', err);
-    ui.share.error = err.message === 'INVALID_CODE' ? STRINGS.ERR_CODE_INVALID : STRINGS.SHARE_STATUS_FAILED;
+    ui.share.error = err instanceof Error && err.message === 'INVALID_CODE'
+      ? STRINGS.ERR_CODE_INVALID
+      : STRINGS.SHARE_STATUS_FAILED;
   } finally {
     ui.share.busy = false;
     render();
   }
 }
 
-function disconnect() {
+function disconnect(): void {
   session?.close();
   session = null;
   Object.assign(ui.share, { status: 'idle', invite: '', reply: '', inviteDraft: '', replyDraft: '', error: '' });
   render();
 }
 
-const actions = {
+type Handler = (el: HTMLElement, event: Event) => void | Promise<void>;
+
+const actions: Record<string, Handler> = {
   brand(el) {
-    const id = el.dataset.brand;
-    if (id === state().brandId) return;
+    const id = el.dataset['brand'] as BrandId;
+    if (id === currentState().brandId) return;
     commit([['cfg:brand', id]]);
     ui.target = null;
     toast(STRINGS.TOAST_BRAND(BRANDS[id].shortName));
   },
   mode(el) {
-    const mode = el.dataset.mode;
-    if (mode === state().mode) return;
+    const mode = el.dataset['mode'];
+    if (mode === currentState().mode) return;
     commit([['cfg:mode', mode]]);
   },
   target(el) {
-    const target = el.dataset.target;
+    const target = el.dataset['target'] ?? null;
     if (target === ui.target) return;
     ui.target = target;
     render();
   },
   plate(el) {
-    const s = state();
+    const s = currentState();
     const owner = currentOwner(s);
-    const current = s.brands[s.brandId].plates[owner]?.[el.dataset.plate] ?? 0;
-    const next = Math.min(999, Math.max(0, current + Number(el.dataset.delta)));
-    if (next !== current) setPlate(s.brandId, owner, el.dataset.plate, next);
+    const plate = el.dataset['plate'] ?? '';
+    const current = s.brands[s.brandId].plates[owner]?.[plate] ?? 0;
+    const next = Math.min(999, Math.max(0, current + Number(el.dataset['delta'])));
+    if (next !== current) setPlate(s.brandId, owner, plate, next);
   },
   preset(el) {
-    const s = state();
-    const preset = BRANDS[s.brandId].presets[Number(el.dataset.index)];
-    const text = STRINGS[preset.textKey];
+    const s = currentState();
+    const preset = BRANDS[s.brandId].presets[Number(el.dataset['index'])];
+    if (!preset) return;
+    const text = STRINGS[preset.textKey as keyof typeof STRINGS] as unknown as { name: string };
     addExtra(text.name, preset.price, 1);
   },
   extra(el) {
-    const s = state();
-    const ex = s.brands[s.brandId].extras.find((e) => e.id === el.dataset.id);
+    const s = currentState();
+    const ex = s.brands[s.brandId].extras.find((e) => e.id === el.dataset['id']);
     if (!ex) return;
-    const qty = ex.qty + Number(el.dataset.delta);
-    const key = cellsKey.extra(s.brandId, ex.id);
-    commit([[key, qty <= 0 ? null : { n: ex.name, p: ex.price, q: qty, o: ex.owner }]]);
+    const qty = ex.qty + Number(el.dataset['delta']);
+    commit([[cellsKey.extra(s.brandId, ex.id), qty <= 0 ? null : { n: ex.name, p: ex.price, q: qty, o: ex.owner }]]);
   },
   discount(el) {
-    commit([[cellsKey.brandField(state().brandId, 'discount'), Number(el.dataset.amount)]]);
+    commit([[cellsKey.brandField(currentState().brandId, 'discount'), Number(el.dataset['amount'])]]);
   },
   'add-person'() {
-    const s = state();
+    const s = currentState();
     const id = newPersonId();
     const name = STRINGS.DEFAULT_PERSON_NAME(s.people.length + 1);
     commit([[cellsKey.person(id), { n: name, o: Date.now() }]]);
@@ -345,7 +356,7 @@ const actions = {
     toast(STRINGS.TOAST_PERSON_ADDED(name));
   },
   'remove-person'(el) {
-    removePerson(el.dataset.person);
+    removePerson(el.dataset['person'] ?? '');
   },
   'open-share'() {
     ui.share.open = true;
@@ -356,10 +367,10 @@ const actions = {
     render();
   },
   'close-share-backdrop'(el, event) {
-    if (event.target === el) actions['close-share']();
+    if (event.target === el) void actions['close-share']?.(el, event);
   },
   'share-tab'(el) {
-    ui.share.tab = el.dataset.tab;
+    ui.share.tab = el.dataset['tab'] === 'guest' ? 'guest' : 'host';
     ui.share.error = '';
     render();
   },
@@ -368,7 +379,7 @@ const actions = {
   join: joinInvite,
   disconnect,
   async 'copy-code'(el) {
-    const text = el.dataset.code === 'invite' ? ui.share.invite : ui.share.reply;
+    const text = el.dataset['code'] === 'invite' ? ui.share.invite : ui.share.reply;
     await copyText(text, STRINGS.TOAST_CODE_COPIED);
   },
   'open-clear'() {
@@ -380,36 +391,37 @@ const actions = {
     render();
   },
   'close-clear-backdrop'(el, event) {
-    if (event.target === el) actions['close-clear']();
+    if (event.target === el) void actions['close-clear']?.(el, event);
   },
   'confirm-clear'() {
-    clearBrand(state().brandId);
+    clearBrand(currentState().brandId);
   },
   copy: copySummary,
 };
 
-const changes = {
+type ChangeHandler = (el: HTMLInputElement) => void;
+
+const changes: Record<string, ChangeHandler> = {
   budget(el) {
-    commit([[cellsKey.brandField(state().brandId, 'budget'), parseIntInRange(el.value, 0, 100000)]]);
+    commit([[cellsKey.brandField(currentState().brandId, 'budget'), parseIntInRange(el.value, 0, 100000)]]);
   },
   discount(el) {
-    commit([[cellsKey.brandField(state().brandId, 'discount'), parseIntInRange(el.value, 0, 100000)]]);
+    commit([[cellsKey.brandField(currentState().brandId, 'discount'), parseIntInRange(el.value, 0, 100000)]]);
   },
   sc(el) {
-    commit([[cellsKey.brandField(state().brandId, 'sc'), el.checked]]);
+    commit([[cellsKey.brandField(currentState().brandId, 'sc'), el.checked]]);
   },
   'equal-tax'(el) {
     commit([['cfg:equalTaxSplit', el.checked]]);
   },
   'plate-input'(el) {
-    const s = state();
-    const owner = currentOwner(s);
-    setPlate(s.brandId, owner, el.dataset.plate, parseIntInRange(el.value, 0, 999));
+    const s = currentState();
+    setPlate(s.brandId, currentOwner(s), el.dataset['plate'] ?? '', parseIntInRange(el.value, 0, 999));
   },
   'person-name'(el) {
-    const id = el.dataset.person;
+    const id = el.dataset['person'] ?? '';
     const name = el.value.trim();
-    const current = cells[cellsKey.person(id)]?.v;
+    const current = cells[cellsKey.person(id)]?.v as { n: string; o: number } | null | undefined;
     if (!name || !current) {
       render();
       return;
@@ -419,47 +431,59 @@ const changes = {
 };
 
 document.addEventListener('click', (event) => {
-  const el = event.target.closest('[data-action]');
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const el = target.closest<HTMLElement>('[data-action]');
   if (!el) return;
-  const handler = actions[el.dataset.action];
-  if (handler) handler(el, event);
+  const handler = actions[el.dataset['action'] ?? ''];
+  if (handler) void handler(el, event);
 });
 
 document.addEventListener('change', (event) => {
-  const handler = changes[event.target.dataset?.change];
-  if (handler) handler(event.target);
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) return;
+  const handler = changes[target.dataset['change'] ?? ''];
+  if (handler) handler(target);
 });
 
 document.addEventListener('input', (event) => {
-  const field = event.target.dataset?.shareDraft;
-  if (field === 'reply') ui.share.replyDraft = event.target.value;
-  if (field === 'invite') ui.share.inviteDraft = event.target.value;
+  const target = event.target;
+  if (!(target instanceof HTMLTextAreaElement)) return;
+  const field = target.dataset['shareDraft'];
+  if (field === 'reply') ui.share.replyDraft = target.value;
+  if (field === 'invite') ui.share.inviteDraft = target.value;
 });
 
-document.addEventListener('toggle', (event) => {
-  if (event.target.matches?.('[data-tax-details]')) ui.taxOpen = event.target.open;
-}, true);
-
 document.addEventListener('submit', (event) => {
-  if (!event.target.matches('[data-form="custom"]')) return;
+  const target = event.target;
+  if (!(target instanceof HTMLFormElement) || !target.matches('[data-form="custom"]')) return;
   event.preventDefault();
-  const form = event.target;
-  const price = Number(form.price.value);
+  const field = (n: string): HTMLInputElement => {
+    const el = target.querySelector<HTMLInputElement>(`[name="${n}"]`);
+    if (!el) throw new Error(`Missing field ${n}`);
+    return el;
+  };
+  const price = Number(field('extraPrice').value);
   if (!Number.isInteger(price) || price < 0 || price > 100000) {
     toast(STRINGS.ERR_PRICE_INVALID);
     return;
   }
-  const name = form.name.value.trim().slice(0, 60) || STRINGS.EXTRA_DEFAULT_NAME;
-  addExtra(name, price, parseIntInRange(form.qty.value, 1, 99));
-  form.reset();
-  form.qty.value = '1';
+  const name = field('extraName').value.trim().slice(0, 60) || STRINGS.EXTRA_DEFAULT_NAME;
+  addExtra(name, price, parseIntInRange(field('extraQty').value, 1, 99));
+  target.reset();
+  field('extraQty').value = '1';
 });
+
+document.addEventListener('toggle', (event) => {
+  const target = event.target;
+  if (target instanceof HTMLDetailsElement && target.matches('[data-tax-details]')) ui.taxOpen = target.open;
+}, true);
 
 // Boot: first run gets two person rows so the user can type real names right away.
 // Fixed ids: two phones that both start fresh merge into the same two people, not four.
 if (!Object.keys(cells).some((k) => k.startsWith('person:'))) {
   const now = Date.now();
-  cells = [1, 2].reduce(
+  cells = [1, 2].reduce<Cells>(
     (acc, n) => setCell(acc, cellsKey.person(`p_default${n}`), { n: STRINGS.DEFAULT_PERSON_NAME(n), o: n }, now),
     cells,
   );
