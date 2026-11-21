@@ -4,7 +4,7 @@
 import { allocate, mulRound, sum } from './money.ts';
 
 export type Category = 'food' | 'drink' | 'alcohol';
-export type TaxRule = 'bill' | 'net' | 'vat7' | 'sc10_vat7';
+export type TaxRule = 'none' | 'sc' | 'vat' | 'sc_vat';
 
 export interface SplitItem {
   id: string;
@@ -59,11 +59,13 @@ export interface SplitResult {
 }
 
 export function rateFor(rule: TaxRule, s: SplitSettings): { sc: number; vat: number } {
+  const sc = Math.max(0, s.scRate);
+  const vat = Math.max(0, s.vatRate);
   switch (rule) {
-    case 'net': return { sc: 0, vat: 0 };
-    case 'vat7': return { sc: 0, vat: 7 };
-    case 'sc10_vat7': return { sc: 10, vat: 7 };
-    case 'bill': return { sc: Math.max(0, s.scRate), vat: Math.max(0, s.vatRate) };
+    case 'none': return { sc: 0, vat: 0 };
+    case 'sc': return { sc, vat: 0 };
+    case 'vat': return { sc: 0, vat };
+    case 'sc_vat': return { sc, vat };
   }
 }
 

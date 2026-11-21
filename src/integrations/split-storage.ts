@@ -23,7 +23,7 @@ export const defaultSplitData = (): SplitData => ({
   people: [],
   items: [],
   settings: {
-    categoryRules: { food: 'bill', drink: 'bill', alcohol: 'sc10_vat7' },
+    categoryRules: { food: 'sc_vat', drink: 'sc_vat', alcohol: 'sc_vat' },
     scRate: 10, vatRate: 7, compound: true, discountSatang: 0,
     discountMode: 'proportional', taxSplit: 'itemized', roundUp: false,
   },

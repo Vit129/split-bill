@@ -5,7 +5,7 @@ import { evaluateExpression } from '../src/logic/expr.ts';
 import { lcg } from './fixtures/billing.fixtures.ts';
 
 const base: SplitSettings = {
-  categoryRules: { food: 'bill', drink: 'net', alcohol: 'sc10_vat7' },
+  categoryRules: { food: 'sc_vat', drink: 'none', alcohol: 'sc_vat' },
   scRate: 10, vatRate: 7, compound: true, discountSatang: 0,
   discountMode: 'proportional', taxSplit: 'itemized', roundUp: false,
 };
@@ -36,9 +36,9 @@ test('[BE-BL] per-person totals add up to the bill for random bills, with or wit
       discountMode: run % 2 ? 'equal' : 'proportional',
       taxSplit: run % 3 ? 'itemized' : 'equal',
       categoryRules: {
-        food: (['bill', 'net', 'vat7', 'sc10_vat7'] as const)[run % 4] ?? 'bill',
-        drink: (['bill', 'net', 'vat7', 'sc10_vat7'] as const)[(run + 1) % 4] ?? 'bill',
-        alcohol: (['bill', 'net', 'vat7', 'sc10_vat7'] as const)[(run + 2) % 4] ?? 'bill',
+        food: (['sc_vat', 'none', 'vat', 'sc_vat'] as const)[run % 4] ?? 'sc_vat',
+        drink: (['sc_vat', 'none', 'vat', 'sc_vat'] as const)[(run + 1) % 4] ?? 'sc_vat',
+        alcohol: (['sc_vat', 'none', 'vat', 'sc_vat'] as const)[(run + 2) % 4] ?? 'sc_vat',
       },
     };
     const r = computeSplit(items, ids, settings);
@@ -51,7 +51,7 @@ test('[BE-BL] per-person totals add up to the bill for random bills, with or wit
 });
 
 test('[BE-IT] an item nobody picked is shared by everyone and is flagged', () => {
-  const r = computeSplit([item('x', 100, [])], ['a', 'b'], { ...base, categoryRules: { food: 'net', drink: 'net', alcohol: 'net' } });
+  const r = computeSplit([item('x', 100, [])], ['a', 'b'], { ...base, categoryRules: { food: 'none', drink: 'none', alcohol: 'none' } });
   assert.equal(r.unassigned, 1);
   assert.equal(r.persons[0]?.foodSatang, 5000);
   assert.equal(r.persons[1]?.foodSatang, 5000);
@@ -59,7 +59,7 @@ test('[BE-IT] an item nobody picked is shared by everyone and is flagged', () =>
 
 test('[BE-BL] equal discount never takes more than a person ate (no negative shares)', () => {
   const items = [item('a1', 10, ['a']), item('b1', 100, ['b'])];
-  const r = computeSplit(items, ['a', 'b'], { ...base, categoryRules: { food: 'net', drink: 'net', alcohol: 'net' }, discountSatang: 4000, discountMode: 'equal' });
+  const r = computeSplit(items, ['a', 'b'], { ...base, categoryRules: { food: 'none', drink: 'none', alcohol: 'none' }, discountSatang: 4000, discountMode: 'equal' });
   assert.equal(r.persons[0]?.discountSatang, 1000, 'a ate only 10 baht so takes 10 off');
   assert.equal(r.persons[1]?.discountSatang, 3000, 'b takes the rest');
   assert.equal(r.persons[0]?.totalSatang, 0);
