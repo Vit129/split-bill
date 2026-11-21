@@ -23,9 +23,9 @@ export const defaultSplitData = (): SplitData => ({
   people: [],
   items: [],
   settings: {
-    categoryRules: { food: 'sc_vat', drink: 'sc_vat', alcohol: 'sc_vat' },
-    categoryRates: { food: { sc: 10, vat: 7 }, drink: { sc: 10, vat: 7 }, alcohol: { sc: 10, vat: 7 } },
-    compound: true, discountSatang: 0,
+    taxRule: 'sc_vat',
+    taxRates: { sc: 10, vat: 7 },
+    discountSatang: 0,
     discountMode: 'proportional', taxSplit: 'itemized', roundUp: false,
   },
 });

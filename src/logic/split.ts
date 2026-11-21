@@ -17,11 +17,9 @@ export interface SplitItem {
 }
 
 export interface SplitSettings {
-  // SC/VAT rule for each category. Set once in the settings card, not per item.
-  categoryRules: Record<Category, TaxRule>;
-  // SC% and VAT% for each category, used when that category's rule includes them.
-  categoryRates: Record<Category, { sc: number; vat: number }>;
-  compound: boolean; // VAT on (food + SC), as in ++ menus
+  // One SC/VAT rule for the whole bill, and its percentages.
+  taxRule: TaxRule;
+  taxRates: { sc: number; vat: number };
   discountSatang: number;
   discountMode: 'proportional' | 'equal';
   taxSplit: 'itemized' | 'equal';
@@ -115,11 +113,12 @@ export function computeSplit(items: readonly SplitItem[], personIds: readonly st
       unassigned += 1;
     }
     const shares = allocate(base, owners.map(() => 1));
-    const rate = rateFor(s.categoryRules[item.category], s.categoryRates[item.category]);
+    const rate = rateFor(s.taxRule, s.taxRates);
     owners.forEach((owner, k) => {
       const share = shares[k] ?? 0;
       const sc = mulRound(share, rate.sc, 100);
-      const vat = mulRound(s.compound ? share + sc : share, rate.vat, 100);
+      // VAT is charged on food plus SC, as in ++ menus.
+      const vat = mulRound(share + sc, rate.vat, 100);
       food[owner] = (food[owner] ?? 0) + share;
       byCat[item.category][owner] = (byCat[item.category][owner] ?? 0) + share;
       scFull[owner] = (scFull[owner] ?? 0) + sc;

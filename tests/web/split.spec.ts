@@ -34,10 +34,10 @@ test('[FE-IT] split: a bad price expression is rejected, not evaluated', async (
   await expect(page.locator('#split-root .level-over')).toHaveText('กรุณาระบุราคาที่ถูกต้อง');
 });
 
-test('[FE-IT] split: pressing SC + VAT for a category shows both percentage inputs filled with 10 and 7', async ({ page }) => {
-  await page.locator('#split-root [data-split-action="cat-rule"][data-cat="drink"][data-rule="none"]').click();
-  await expect(page.locator('#split-root input[data-split-change="cat-sc"][data-cat="drink"]')).toHaveCount(0);
-  await page.locator('#split-root [data-split-action="cat-rule"][data-cat="drink"][data-rule="sc_vat"]').click();
-  await expect(page.locator('#split-root input[data-split-change="cat-sc"][data-cat="drink"]')).toHaveValue('10');
-  await expect(page.locator('#split-root input[data-split-change="cat-vat"][data-cat="drink"]')).toHaveValue('7');
+test('[FE-IT] split: pressing SC + VAT shows both percentage inputs filled with 10 and 7', async ({ page }) => {
+  await page.locator('#split-root [data-split-action="bill-rule"][data-rule="none"]').click();
+  await expect(page.locator('#split-root input[data-split-change="rate-sc"]')).toHaveCount(0);
+  await page.locator('#split-root [data-split-action="bill-rule"][data-rule="sc_vat"]').click();
+  await expect(page.locator('#split-root input[data-split-change="rate-sc"]')).toHaveValue('10');
+  await expect(page.locator('#split-root input[data-split-change="rate-vat"]')).toHaveValue('7');
 });

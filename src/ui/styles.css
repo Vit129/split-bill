@@ -192,3 +192,7 @@ dl { margin: 0; }
 @media (max-width: 520px) { .row.two { grid-template-columns: 1fr; } }
 
 .cat-rule { display: grid; gap: 6px; }
+
+.rate-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.rate { display: flex; align-items: center; gap: 6px; font-size: var(--text-label); color: var(--muted); }
+.rate .input { width: 88px; text-align: right; }

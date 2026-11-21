@@ -134,11 +134,8 @@ function setSettings(patch: Partial<SplitData['settings']>): void {
   commit();
 }
 
-function setCategoryRate(cat: string | undefined, part: 'sc' | 'vat', raw: string): void {
-  if (cat !== 'food' && cat !== 'drink' && cat !== 'alcohol') return;
-  const value = Math.max(0, Number(raw) || 0);
-  const current = data.settings.categoryRates[cat];
-  setSettings({ categoryRates: { ...data.settings.categoryRates, [cat]: { ...current, [part]: value } } });
+function setTaxRate(part: 'sc' | 'vat', raw: string): void {
+  setSettings({ taxRates: { ...data.settings.taxRates, [part]: Math.max(0, Number(raw) || 0) } });
 }
 
 const clickActions: Record<string, (el: HTMLElement) => void> = {
@@ -158,17 +155,14 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
     ui = { ...ui, category: cat };
     render();
   },
-  'cat-rule'(el) {
-    const cat = el.dataset['cat'] as Category | undefined;
+  'bill-rule'(el) {
     const rule = el.dataset['rule'] as TaxRule | undefined;
-    if (!cat || !rule) return;
-    const rates = { ...data.settings.categoryRates[cat] };
-    if (rule === 'sc' || rule === 'sc_vat') if (rates.sc === 0) rates.sc = 10;
-    if (rule === 'vat' || rule === 'sc_vat') if (rates.vat === 0) rates.vat = 7;
-    setSettings({
-      categoryRules: { ...data.settings.categoryRules, [cat]: rule },
-      categoryRates: { ...data.settings.categoryRates, [cat]: rates },
-    });
+    if (!rule) return;
+    // A rule that shows a percentage fills an empty one with the default 10 / 7.
+    const rates = { ...data.settings.taxRates };
+    if ((rule === 'sc' || rule === 'sc_vat') && rates.sc === 0) rates.sc = 10;
+    if ((rule === 'vat' || rule === 'sc_vat') && rates.vat === 0) rates.vat = 7;
+    setSettings({ taxRule: rule, taxRates: rates });
   },
   preset(el) {
     const preset = BILL_PRESETS[ui.category][Number(el.dataset['index'])];
@@ -255,13 +249,12 @@ const changeActions: Record<string, (el: HTMLInputElement) => void> = {
   },
   shop(el) { data = { ...data, shopName: el.value.slice(0, 60) }; saveSplit(data); },
   note(el) { data = { ...data, note: el.value.slice(0, 120) }; saveSplit(data); },
-  'cat-sc'(el) { setCategoryRate(el.dataset['cat'], 'sc', el.value); },
-  'cat-vat'(el) { setCategoryRate(el.dataset['cat'], 'vat', el.value); },
+  'rate-sc'(el) { setTaxRate('sc', el.value); },
+  'rate-vat'(el) { setTaxRate('vat', el.value); },
   discount(el) {
     const baht = Math.max(0, Number(el.value) || 0);
     setSettings({ discountSatang: Math.round(baht * 100) });
   },
-  compound(el) { setSettings({ compound: el.checked }); },
   round(el) { setSettings({ roundUp: el.checked }); },
 };
 

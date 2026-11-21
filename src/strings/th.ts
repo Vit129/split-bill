@@ -262,7 +262,7 @@ export const STRINGS = {
   BILL_PRICE_LABEL: 'ราคา (พิมพ์สูตรได้ เช่น 599+49)',
   BILL_QTY_LABEL: 'จำนวน',
   BILL_EATERS: 'ใครกิน (แตะเพื่อเลือก)',
-  BILL_CATEGORY_RULES: 'เรตภาษีตามหมวด (ใช้กับทุกรายการในหมวด)',
+  BILL_TAX_RULE: 'เรต SC/VAT ของทั้งบิล',
   BILL_RULE_NONE: 'ไม่มี SC/VAT',
   BILL_RULE_VAT: 'VAT',
   BILL_RULE_SC: 'SC',

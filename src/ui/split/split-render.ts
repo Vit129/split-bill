@@ -156,7 +156,6 @@ function itemRow(it: SplitItem, data: SplitData, ui: SplitUi): string {
   return `<div class="item-row${ui.editing === it.id ? ' is-editing' : ''}">
     <div class="item-main">
       <strong>${esc(it.name)}</strong>${it.qty > 1 ? ` <span class="pill">× ${it.qty}</span>` : ''}
-      <span class="pill">${esc(pillText(data.settings, it.category))}</span>
       <div class="muted small">${esc(txt('BILL_EATERS'))}</div>
       <div class="chips">${eaters}</div>
       ${it.payers.length === 0 ? `<div class="level-warn small">${esc(txt('BILL_ITEM_NO_PAYER'))}</div>` : ''}
@@ -169,31 +168,22 @@ function itemRow(it: SplitItem, data: SplitData, ui: SplitUi): string {
   </div>`;
 }
 
-// Pill text on each item: the rule plus its live percentages for that category.
-function pillText(settings: SplitSettings, c: Category): string {
-  const rule = settings.categoryRules[c];
-  const rates = settings.categoryRates[c];
-  const p = partsOf(rule);
-  const bits = [p.sc ? `SC ${rates.sc}%` : '', p.vat ? `VAT ${rates.vat}%` : ''].filter(Boolean);
-  return bits.length ? bits.join(' + ') : txt('BILL_RULE_NONE');
-}
-
 function settingsCard(settings: SplitSettings, discountBaht: string): string {
-  const categoryRows = CATEGORY_ORDER.map((c) => `
-    <div class="cat-rule">
-      <span class="small">${esc(txt(CATEGORY_KEYS[c]))}</span>
-      <div class="chips">${(Object.keys(RULE_KEYS) as TaxRule[]).map((r) => `
-        <button type="button" class="chip${settings.categoryRules[c] === r ? ' is-active' : ''}" data-split-action="cat-rule" data-cat="${c}" data-rule="${r}"
-          aria-pressed="${settings.categoryRules[c] === r}">${esc(ruleLabel(r))}</button>`).join('')}</div>
-      ${partsOf(settings.categoryRules[c]).sc ? `<label class="lbl">${esc(txt('BILL_SC_PERCENT'))}
-        <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.categoryRates[c].sc}" data-split-change="cat-sc" data-cat="${c}"></label>` : ''}
-      ${partsOf(settings.categoryRules[c]).vat ? `<label class="lbl">${esc(txt('BILL_VAT_PERCENT'))}
-        <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.categoryRates[c].vat}" data-split-change="cat-vat" data-cat="${c}"></label>` : ''}
-    </div>`).join('');
+  const p = partsOf(settings.taxRule);
+  const taxRow = `
+    <p class="label">${esc(txt('BILL_TAX_RULE'))}</p>
+    <div class="chips">${(Object.keys(RULE_KEYS) as TaxRule[]).map((r) => `
+      <button type="button" class="chip${settings.taxRule === r ? ' is-active' : ''}" data-split-action="bill-rule" data-rule="${r}"
+        aria-pressed="${settings.taxRule === r}">${esc(ruleLabel(r))}</button>`).join('')}</div>
+    <div class="rate-row">
+      ${p.sc ? `<label class="rate">${esc(txt('BILL_SC_PERCENT'))}
+        <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.taxRates.sc}" data-split-change="rate-sc"></label>` : ''}
+      ${p.vat ? `<label class="rate">${esc(txt('BILL_VAT_PERCENT'))}
+        <input class="input" type="number" min="0" max="100" step="0.5" value="${settings.taxRates.vat}" data-split-change="rate-vat"></label>` : ''}
+    </div>`;
   return `<section class="card">
     <h2>${esc(txt('BILL_SETTINGS_TITLE'))}</h2>
-    <p class="label">${esc(txt('BILL_CATEGORY_RULES'))}</p>
-    ${categoryRows}
+    ${taxRow}
     <div class="row two">
       <label class="lbl">${esc(txt('BILL_DISCOUNT'))}
         <input class="input" type="number" min="0" step="1" value="${esc(discountBaht)}" data-split-change="discount"></label>
@@ -203,7 +193,6 @@ function settingsCard(settings: SplitSettings, discountBaht: string): string {
           <button type="button" class="${settings.discountMode === 'equal' ? 'is-active' : ''}" data-split-action="discount-mode" data-value="equal">${esc(txt('BILL_DISCOUNT_EQUAL'))}</button>
         </span></label>
     </div>
-    <label class="toggle"><input type="checkbox" data-split-change="compound" ${settings.compound ? 'checked' : ''}> ${esc(txt('BILL_COMPOUND'))}</label>
     <label class="toggle"><input type="checkbox" data-split-change="round" ${settings.roundUp ? 'checked' : ''}> ${esc(txt('BILL_ROUND'))}</label>
     <p class="label">${esc(txt('BILL_TAX_ITEMIZED'))} / ${esc(txt('BILL_TAX_EQUAL'))}</p>
     <div class="segmented" role="group">
