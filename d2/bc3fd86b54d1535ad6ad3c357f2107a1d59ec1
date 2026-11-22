@@ -1,0 +1,25 @@
+release-manifest.json
+  s_4a5cd090ce984e::t_f997a9a6705462 2-3
+src/config/version.ts
+  s_4a5cd090ce984e::t_f997a9a6705462 2-3
+package.json
+  s_4a5cd090ce984e::t_f997a9a6705462 3
+CHANGELOG.md
+  s_4a5cd090ce984e::t_f997a9a6705462 7-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "d2bc3fd86b54d1535ad6ad3c357f2107a1d59ec1",
+  "prompts": {},
+  "sessions": {
+    "s_4a5cd090ce984e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7fa9747-35de-4853-ab7a-8d74c2eb0930",
+        "model": "claude-haiku-5-5"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
