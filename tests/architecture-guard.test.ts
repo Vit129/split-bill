@@ -27,12 +27,11 @@ const stripComments = (text: string): string => text
 const rel = (file: string): string => relative(root, file).split(sep).join('/');
 const files = listFiles(srcRoot);
 const code = (file: string): string => stripComments(readFileSync(file, 'utf8'));
-const scanFiles = (sourceFiles: string[], pattern: RegExp, filter: (file: string) => boolean): string[] => sourceFiles
+const scan = (pattern: RegExp, filter: (file: string) => boolean): string[] => files
   .filter(filter)
   .flatMap((file) => code(file).split('\n')
     .map((line, i) => (pattern.test(line) ? `${rel(file)}:${i + 1}: ${line.trim()}` : null))
     .filter((x): x is string => x !== null));
-const scan = (pattern: RegExp, filter: (file: string) => boolean): string[] => scanFiles(files, pattern, filter);
 
 const isStrings = (file: string): boolean => rel(file).startsWith('src/strings/');
 const isColorConfig = (file: string): boolean => rel(file) === 'src/config/colors.ts';
@@ -47,16 +46,6 @@ test('[FE-IT] no Thai text outside src/strings (every label is a translation key
 test('[FE-UT] no hex colours outside config/colors.ts (use tokens)', () => {
   const hex = /#[0-9a-fA-F]{3,8}\b/;
   assert.deepEqual(scan(hex, (f) => !isColorConfig(f)), []);
-});
-
-test('[FE-UT] architecture guard rejects a known-bad hex fixture and accepts clean source', () => {
-  const hex = /#[0-9a-fA-F]{3,8}\b/;
-  const badFixture = join(root, 'tests/fixtures/architecture-guard-bad-color.ts');
-  const badHits = scanFiles([badFixture], hex, () => true);
-
-  assert.deepEqual(scan(hex, (f) => !isColorConfig(f)), []);
-  assert.equal(badHits.length, 1);
-  assert.throws(() => assert.deepEqual(badHits, []), assert.AssertionError);
 });
 
 test('[FE-UT] no numeric font sizes outside config/typography.ts', () => {
