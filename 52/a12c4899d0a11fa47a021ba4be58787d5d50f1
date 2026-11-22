@@ -1,0 +1,21 @@
+tests/web/split.spec.ts
+  s_871353573c8203::t_90706b18e8ef67 2,21,35
+tests/billing.test.ts
+  s_871353573c8203::t_90706b18e8ef67 6,87-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "52a12c4899d0a11fa47a021ba4be58787d5d50f1",
+  "prompts": {},
+  "sessions": {
+    "s_871353573c8203": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a201cf-52a1-7f43-aaf6-698cce38eedf",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
