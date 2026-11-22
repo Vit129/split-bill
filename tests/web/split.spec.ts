@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { STRINGS } from '../../src/strings/th.ts';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/#split');
@@ -17,7 +18,7 @@ test('[FE-IT] split: the default two people and a 599 ฿ buffet give 705.02 ฿
 test('[FE-IT] split: an item added without eaters is flagged on its row and on the summary', async ({ page }) => {
   await page.locator('#split-root [data-split-action="preset"][data-index="0"]').click();
   await page.locator('#split-root form[data-split-form="item"] button[type="submit"]').click();
-  await expect(page.locator('#split-root .item-row .level-warn').first()).toHaveText('ยังไม่ระบุคนจ่าย');
+  await expect(page.locator('#split-root .item-row .level-warn').first()).toHaveText(STRINGS.BILL_ITEM_NO_PAYER);
   await expect(page.locator('#split-root .summary-card .level-warn')).toHaveCount(1);
 });
 
@@ -31,7 +32,7 @@ test('[FE-IT] split: tapping a name on the item row makes that person the only e
 test('[FE-IT] split: a bad price expression is rejected, not evaluated', async ({ page }) => {
   await page.locator('#split-root [data-split-draft="price"]').fill('alert(1)');
   await page.locator('#split-root form[data-split-form="item"] button[type="submit"]').click();
-  await expect(page.locator('#split-root .level-over')).toHaveText('กรุณาระบุราคาที่ถูกต้อง');
+  await expect(page.locator('#split-root .level-over')).toHaveText(STRINGS.ERR_PRICE_INVALID);
 });
 
 test('[FE-IT] split: pressing SC + VAT shows both percentage inputs filled with 10 and 7', async ({ page }) => {

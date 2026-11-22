@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { chargesFor, computeBill, computeEqualShares, computePersonShares } from '../src/logic/billing.ts';
 import { allocate, sum } from '../src/logic/money.ts';
 import { BRANDS } from '../src/config/brands.ts';
+import { STRINGS } from '../src/strings/th.ts';
 import { lcg, randomPeople, TAX_TYPES } from './fixtures/billing.fixtures.ts';
 
 test('[BE-UT] ++ brand: 100 baht food gives 117.70 with SC then VAT', () => {
@@ -83,8 +84,8 @@ test('[BE-IT] Sushiro checkout case: 580 ฿ food → 638 ฿ total, split 242 /
     Object.entries(counts).reduce((a, [k, n]) => a + n * (price[k] ?? 0) * 100, 0);
   const { bill, shares } = computePersonShares({
     people: [
-      { id: 'a', name: 'คนที่ 1', plateCount: 4, personalSatang: food({ red: 2, silver: 1, gold: 1 }) },
-      { id: 'b', name: 'คนที่ 2', plateCount: 6, personalSatang: food({ red: 1, silver: 4, gold: 1 }) },
+      { id: 'a', name: STRINGS.DEFAULT_PERSON_NAME(1), plateCount: 4, personalSatang: food({ red: 2, silver: 1, gold: 1 }) },
+      { id: 'b', name: STRINGS.DEFAULT_PERSON_NAME(2), plateCount: 6, personalSatang: food({ red: 1, silver: 4, gold: 1 }) },
     ],
     sharedSatang: 0, discountSatang: 0, taxType: 'vat_included', serviceCharge: true, equalTaxSplit: false,
   });
