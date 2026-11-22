@@ -1,6 +1,6 @@
 {
   "name": "split-bill",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Bill calculator for Thai restaurants: plates or items, SC and VAT, split per person",
   "type": "module",
