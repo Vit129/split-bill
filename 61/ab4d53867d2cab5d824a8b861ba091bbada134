@@ -1,0 +1,24 @@
+ARCHITECTURE.md
+  s_59cad0227ecea0::t_e1a18300f3d067 47-48
+tests/fixtures/architecture-guard-bad-color.ts
+  s_59cad0227ecea0::t_e1a18300f3d067 1-3
+tests/architecture-guard.test.ts
+  s_59cad0227ecea0::t_e1a18300f3d067 30,35,52-59
+  s_59cad0227ecea0::t_cf960cfb9832e1 60-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "61ab4d53867d2cab5d824a8b861ba091bbada134",
+  "prompts": {},
+  "sessions": {
+    "s_59cad0227ecea0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a2012a-7d69-7d61-84e8-faa51321bdf5",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
