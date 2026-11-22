@@ -1,5 +1,5 @@
 // Design tokens. The only src file allowed to hold colour hex values
-// (tests/architecture-guard.test.js enforces it). ui/ reads them as CSS variables.
+// ui/ reads them as CSS variables.
 export const COLORS = {
   INK: '#18181B',
   INK_SOFT: '#3F3F46',

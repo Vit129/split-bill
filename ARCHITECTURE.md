@@ -1,49 +1,38 @@
 # Architecture
 
-Pattern: `~/.claude/skills/ai-sdlc/references/dev-qa-pattern.md` (Dev + QA). Layout: `rules/coding/project-blueprint.md`.
+TypeScript + Vite browser app. `src/` is organized by responsibility; the layer boundaries below are repository rules checked by reviewing the table and searching the source.
 
-## Layer map (dev-qa-pattern §7: BE vs FE per project)
+## Layer map
 
-| Layer | Folder | Holds | Rule |
+| Layer | Folder | May import | Responsibilities and rules |
 |---|---|---|---|
-| **BE** (headless core) | `src/logic/` | billing maths, cell merge, share-code decode, view model, summary text | no DOM, storage, network or WebRTC; no import from `ui/` or `integrations/` |
-| **Config (tokens)** | `src/config/` | `colors.ts` (only hex), `typography.ts` (only font sizes), `brands.ts` (prices, tax type, source links) | data only |
-| **Translator** | `src/strings/th.ts` | every Thai word | the only place Thai text may live |
-| **Integrations** | `src/integrations/` | `storage.ts` (localStorage), `peer-sync.ts` (WebRTC, copy-paste codes) | I/O only, no rules |
-| **FE** (presentation) | `src/ui/` | `render.ts` (markup), `app.ts` (events → cell writes), `styles.css` (var() only) | assembles; never computes a rule |
-| **QA guard** | `tests/architecture-guard.test.ts` | static checks: no Thai outside strings, no hex outside colors, no numeric font sizes outside typography, logic purity, every key exists | fails CI on a breach |
-| **QA tests** | `tests/*.test.ts`, `tests/fixtures/` | headless unit and matrix tests (`node:test`, zero deps) | fixtures hold data only |
+| Translator | `src/strings/` (`th.ts`) | — | Thai language text lives here. The baht sign (U+0E3F) used as a currency symbol next to prices and code comments are allowed anywhere; neither is Thai language text. |
+| Config | `src/config/` | Logic and strings (for preset types) | App data and tokens. Hex colour literals belong only in `src/config/colors.ts`; numeric font-size values belong only in `src/config/typography.ts`. |
+| Logic | `src/logic/` | Logic, config and strings | Calculations, validation, state transforms and summary formatting. No DOM, storage, network or imports from `src/ui/` or `src/integrations/`. |
+| Integrations | `src/integrations/` | Logic | Browser storage and peer sharing I/O; no calculation or presentation rules. |
+| UI | `src/ui/` | Logic, config, strings and integrations | Rendering and event handling. CSS uses typography and colour variables; it does not define hex colours or numeric font sizes. |
+| Unit tests and fixtures | `tests/`, `tests/fixtures/` | Application modules and fixtures | Headless unit tests run with Node's test runner. |
+| Browser tests | `tests/web/` | Running app through Playwright | Browser-level checks. |
 
-Tags (`[LAYER-KIND]`): `[BE-UT]` one function, `[BE-BL]` a rule across steps, `[BE-IT]` two modules together, `[FE-UT]`/`[FE-IT]` for UI-facing checks.
+No static architecture check is configured. Review changes against this table. To locate likely rule violations, use:
 
-## Data model: flat cells (why sharing works without a server)
+```bash
+rg -n '[ก-๙]' src -g '!src/strings/th.ts'
+rg -n '#[0-9A-Fa-f]{3,8}' src -g '!src/config/colors.ts'
+rg -n 'font-size\s*:\s*[0-9]' src
+rg -n 'document\.|localStorage|fetch\(|RTCPeerConnection|from ["\x27].*(ui|integrations)' src/logic
+```
 
-State is a map `key → { v, t }`. `v` is the value (`null` = deleted), `t` is the last write time.
+Review search matches manually: Thai in comments and the baht sign next to prices are allowed. The import search is a locator; inspect imports and browser APIs in each changed logic file.
 
-- Two devices merge by keeping the newer cell for each key. Merge is order-independent and idempotent (tested).
-- Keys: `cfg:brand`, `cfg:mode`, `cfg:equalTaxSplit`, `brand:<b>:sc|discount|budget`, `brand:<b>:plate:<owner>:<plate>` (owner = `table` | `shared` | `p_<id>`), `brand:<b>:extra:<id>`, `person:<id>`.
-- Remote data is untrusted: `isValidCell` checks every key and value, and a payload over 5000 cells is dropped.
-- Known limit: last-write-wins by device clock. Two people tapping the same counter at the same moment can lose one tap. A skewed phone clock can make its edits win.
+## Data model
+
+State is a map `key → { v, t }`. `v` is the value (`null` = deleted), and `t` is the last write time. Devices merge by keeping the newer cell for each key. Remote cells are validated; payloads over 5000 cells are dropped. Last-write-wins uses device clocks, so simultaneous edits or clock skew can lose or override updates.
 
 ## Money
 
-Integer satang everywhere. `allocate()` (largest remainder) splits totals so shares add up exactly.
+Amounts are integer satang. `allocate()` uses largest remainder so shares add up exactly. Person mode splits the shared pool evenly, spreads discounts by gross food, then allocates the grand total by net food (or evenly when configured). Table mode splits the grand total evenly.
 
-- Person mode: the shared pool splits equally; the discount is spread in proportion to each person's gross food (never negative); the bill grand total is spread in proportion to each person's net food (or equally when `equalTaxSplit`).
-- Table mode: the grand total is split equally.
-- Tax formulas: see `src/logic/billing.ts` header and README §"Tax rules".
+## Sharing
 
-## Share flow (no app server)
-
-1. Host: `createInvite()` builds a WebRTC offer and waits for ICE, then shows the code.
-2. Guest: `joinWithInvite(code)` builds an answer and shows its code.
-3. Host pastes the answer → data channel opens → both sides send their full cells and merge.
-4. Each later local change is sent in full to the connected peer.
-
-Only outside party: public STUN server `stun.l.google.com` (to learn addresses). No TURN, so some carrier NATs will fail. One guest per invite.
-
-## Not done / open
-
-- Browser E2E specs live in `tests/web/` (brands, layout, menu, split and sushi). Two-browser sync and layout smoke tests were run manually (see README §"Verified").
-- All five brands are marked `status: 'verified'` in `src/config/brands.ts`. Editing prices in the app is not built.
-- Tax model for vat_included brands matches the reading in `billing.ts`; confirm with one real receipt per brand.
+Peer sharing uses WebRTC and the public Google STUN server; no TURN relay is configured, so some mobile networks may not connect. Sharing is switched off in `src/config/features.ts`.
