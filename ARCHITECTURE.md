@@ -23,7 +23,9 @@ rg -n 'font-size\s*:\s*[0-9]' src
 rg -n 'document\.|localStorage|fetch\(|RTCPeerConnection|from ["\x27].*(ui|integrations)' src/logic
 ```
 
-Review search matches manually: Thai in comments and the baht sign next to prices are allowed. The import search is a locator; inspect imports and browser APIs in each changed logic file.
+Review search matches manually: Thai in comments and the baht sign next to prices are allowed.
+
+Accepted exception: browser tests (`tests/web/*.spec.ts`) import the `STRINGS` keys from `src/strings/th.ts` so their expected text comes from the translator. This is the only place a test may import from `src/`; it is accepted by the owner (2026-11-22), not a violation. The import search is a locator; inspect imports and browser APIs in each changed logic file.
 
 ## Data model
 
