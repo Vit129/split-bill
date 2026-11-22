@@ -44,6 +44,6 @@ Only outside party: public STUN server `stun.l.google.com` (to learn addresses).
 
 ## Not done / open
 
-- `tests-web/` (browser E2E in the pattern) is not in the repo. Two-browser sync and layout smoke tests were run manually (see README §"Verified").
-- Plate prices are unverified for four of five brands (see `src/config/brands.ts` `status` / `sources`). Editing prices in the app is not built.
+- Browser E2E specs live in `tests/web/` (brands, layout, menu, split and sushi). Two-browser sync and layout smoke tests were run manually (see README §"Verified").
+- All five brands are marked `status: 'verified'` in `src/config/brands.ts`. Editing prices in the app is not built.
 - Tax model for vat_included brands matches the reading in `billing.ts`; confirm with one real receipt per brand.
