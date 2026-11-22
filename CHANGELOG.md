@@ -4,6 +4,19 @@ All notable changes to Kaiten Sushi Calc are documented here. The format is base
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-11-22
+
+### Added
+- Replace the hamburger with two tabs, sushi left and split bill right
+
+### Documentation
+- Link the live Pages site at the top of the README
+- State current layering rules
+
+### Fixed
+- Install dependencies before building the Pages site
+- Keep the tax badge and brand tab names fully visible on phones
+
 ## [0.1.0] - 2026-11-21
 
 ### Added
@@ -28,6 +41,7 @@ All notable changes to Kaiten Sushi Calc are documented here. The format is base
 - State where each brand's prices disagree with the sources
 - Mark Sushiro prices verified from the 2026 price structure supplied by the user
 - README for split-bill (English, both screens, maths, running, releases)
+- Changelog for v0.1.0
 
 ### Fixed
 - Brand tabs stay on the sushi screen; item brands show a hint to use the split screen
