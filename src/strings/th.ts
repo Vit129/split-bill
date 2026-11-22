@@ -1,5 +1,5 @@
 // Every user-visible Thai string lives here (dev-qa-pattern §3.4). Brand data
-// in config/brands.js refers to these keys; the architecture guard checks them.
+// in config/brands.ts refers to these keys.
 export const STRINGS = {
   APP_TITLE: 'คิดเงินซูชิจานหมุน',
   BTN_SHARE: 'แชร์โต๊ะ',
