@@ -4,6 +4,18 @@ All notable changes to Kaiten Sushi Calc are documented here. The format is base
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-11-27
+
+### Fixed
+- Include table-mode extras in the count and copied summary when splitting sushi by person.
+- Preserve split-bill totals when a saved bill has no participants and prevent removing the last participant.
+- Calculate service charge and VAT for the whole bill before allocating individual shares.
+- Keep the next click or input focus when a split-bill setting changes.
+
+### Changed
+- Run browser tests before uploading the Pages build and measure only buttons in the touch-target check.
+- Display the release version without a separate build number.
+
 ## [0.1.2] - 2026-11-22
 
 ### Documentation

@@ -38,6 +38,9 @@ test('[BE-BL] per-person totals add up to the bill for random bills, with or wit
     };
     const r = computeSplit(items, ids, settings);
     assert.equal(r.totalSatang, r.grossSatang - r.discountSatang + r.scSatang + r.vatSatang, `run ${run}`);
+    assert.equal(r.persons.reduce((sum, p) => sum + p.totalSatang, 0), r.totalSatang, `run ${run}: total shares`);
+    assert.equal(r.persons.reduce((sum, p) => sum + p.scSatang, 0), r.scSatang, `run ${run}: SC shares`);
+    assert.equal(r.persons.reduce((sum, p) => sum + p.vatSatang, 0), r.vatSatang, `run ${run}: VAT shares`);
     for (const p of r.persons) {
       assert.ok(p.discountSatang <= p.foodSatang, `run ${run}: discount above food`);
       assert.ok(p.totalSatang >= 0, `run ${run}: negative total`);
@@ -65,6 +68,27 @@ test('[BE-BL] discount is applied before SC/VAT (matches the sushi calculator)',
   const r = computeSplit([item('a', 100, ['a'])], ['a'], { ...base, discountSatang: 4000 });
   // food 100 - 40 = 60 net; ++ charges: SC 6, VAT (66) × 7% = 4.62 → total 70.62
   assert.equal(r.persons[0]?.totalSatang, 7062);
+});
+
+test('[TC-0001][BE-BL] changing payers preserves bill-level SC and VAT after discount', () => {
+  const settings = { ...base, discountSatang: 2000 };
+  const dish = { ...item('buffet', 120, []), unitSatang: 12005 };
+  for (const taxSplit of ['itemized', 'equal'] as const) {
+    for (const payers of [[], ['a']]) {
+      const result = computeSplit([{ ...dish, payers }], ['a', 'b'], { ...settings, taxSplit });
+      assert.equal(result.scSatang, 1001);
+      assert.equal(result.vatSatang, 770);
+      assert.equal(result.totalSatang, 11776);
+      assert.equal(result.persons.reduce((sum, person) => sum + person.totalSatang, 0), result.totalSatang);
+    }
+  }
+});
+
+test('[TC-0002][BE-BL] saved items retain the bill total when no participants are present', () => {
+  const result = computeSplit([item('buffet', 599, [])], [], base);
+  assert.equal(result.grossSatang, 59900);
+  assert.equal(result.totalSatang, 70502);
+  assert.deepEqual(result.persons, []);
 });
 
 test('[BE-BL] round up makes each total a whole baht', () => {
