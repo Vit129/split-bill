@@ -1,0 +1,59 @@
+src/ui/split/split-app.ts
+  s_32c37130d00f48::t_37067eed23a2da 306-309,335
+  s_32c37130d00f48::t_6d8fe946e0a7e5 23-25,56-60,63,142,246,282-298
+  s_32c37130d00f48::t_acd77d04da7726 61-62,65-72
+  s_32c37130d00f48::t_7ce0791abad7aa 299
+tests/split.test.ts
+  s_32c37130d00f48::t_e9761c4d0f34d8 73-93
+  s_32c37130d00f48::t_e9295354bee02e 41-43
+tests/web/sushi.spec.ts
+  s_32c37130d00f48::t_e9761c4d0f34d8 2,18-36
+  s_32c37130d00f48::t_72a3941b383635 37
+tests/web/layout.spec.ts
+  s_32c37130d00f48::t_c43e135a1776bf 24
+src/config/version.ts
+  s_32c37130d00f48::t_e4623a923be8ef 2
+package.json
+  s_32c37130d00f48::t_e4623a923be8ef 3
+CHANGELOG.md
+  s_32c37130d00f48::t_e4623a923be8ef 8-16,18
+  s_32c37130d00f48::t_fffb47b31bdf57 7,17
+.github/workflows/pages.yml
+  s_32c37130d00f48::t_c43e135a1776bf 28-31
+release-manifest.json
+  s_32c37130d00f48::t_fffb47b31bdf57 2
+scripts/release.js
+  s_32c37130d00f48::t_fffb47b31bdf57 2-3,54-59,73-77,79-81,84,87-90,93,97-101
+ARCHITECTURE.md
+  s_32c37130d00f48::t_c43e135a1776bf 36-38
+src/logic/view-model.ts
+  s_32c37130d00f48::t_c43e135a1776bf 54-58,72-74,80,95,102
+src/ui/split/split-render.ts
+  s_32c37130d00f48::t_c43e135a1776bf 87-88,229,251-252,255
+tests/web/split.spec.ts
+  s_32c37130d00f48::t_e9761c4d0f34d8 45-92
+  s_32c37130d00f48::t_37067eed23a2da 97-98,105
+  s_32c37130d00f48::t_7df047048d1123 93-96,99-104,106-107
+src/ui/shell.ts
+  s_32c37130d00f48::t_fffb47b31bdf57 4,9
+src/logic/split.ts
+  s_32c37130d00f48::t_c43e135a1776bf 1,122-126,128-130,154-158
+package-lock.json
+  s_32c37130d00f48::t_8856b640835f85 2-3,8-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.7",
+  "base_commit_sha": "065a37f15237000fc6639357603312fbdbd6d206",
+  "prompts": {},
+  "sessions": {
+    "s_32c37130d00f48": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a21c5b-c9c5-7f70-92bc-1da24c0cef13",
+        "model": "gpt-6.2-sol"
+      },
+      "human_author": "Vit129 <vitosk129@gmail.com>"
+    }
+  }
+}
