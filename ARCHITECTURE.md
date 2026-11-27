@@ -33,7 +33,9 @@ State is a map `key → { v, t }`. `v` is the value (`null` = deleted), and `t` 
 
 ## Money
 
-Amounts are integer satang. `allocate()` uses largest remainder so shares add up exactly. Person mode splits the shared pool evenly, spreads discounts by gross food, then allocates the grand total by net food (or evenly when configured). Table mode splits the grand total evenly.
+Amounts are integer satang. `allocate()` uses largest remainder so shares add up exactly. On the sushi screen, person mode splits the shared pool evenly, spreads discounts by gross food, then allocates the grand total by net food (or shares the added charges evenly when configured). Table mode splits the grand total evenly.
+
+On the split-bill screen, SC and VAT are calculated once on the discounted bill, with VAT applied after SC. The two charges are then allocated by each person's applicable share or divided evenly. Optional whole-baht rounding applies to each person's final amount.
 
 ## Sharing
 

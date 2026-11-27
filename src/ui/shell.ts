@@ -1,12 +1,12 @@
 // Shell: two tabs (sushi on the left, split bill on the right). Click only, no swipe.
 // The active screen lives in the URL hash (#sushi or #split), so reload and links keep it.
 import { STRINGS } from '../strings/th.ts';
-import { APP_BUILD, APP_VERSION } from '../config/version.ts';
+import { APP_VERSION } from '../config/version.ts';
 
 type Screen = 'sushi' | 'split';
 
 const versionEl = document.getElementById('app-version');
-if (versionEl) versionEl.textContent = `v${APP_VERSION} · build ${APP_BUILD}`;
+if (versionEl) versionEl.textContent = `v${APP_VERSION}`;
 
 const labels: Record<Screen, string> = { sushi: STRINGS.MENU_SUSHI, split: STRINGS.MENU_SPLIT };
 const sushiScreen = document.getElementById('sushi-screen');

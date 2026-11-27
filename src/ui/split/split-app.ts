@@ -20,6 +20,9 @@ const randomId = (prefix: string): string => `${prefix}_${Math.random().toString
 
 let data: SplitData = loadSplit() ?? freshData();
 let ui: SplitUi = freshUi(data);
+let activePointer: number | null = null;
+let renderPending = false;
+let pointerEndFrame = 0;
 
 function freshData(): SplitData {
   const d = defaultSplitData();
@@ -50,7 +53,23 @@ function resultNow() {
 }
 
 function render(): void {
+  // A field's change can run between pointerdown and click on the next control.
+  if (activePointer !== null) {
+    renderPending = true;
+    return;
+  }
+  const focused = document.activeElement;
+  const keepFocus = renderPending && focused instanceof HTMLInputElement && splitRoot.contains(focused);
+  renderPending = false;
   splitRoot.innerHTML = renderSplit(data, ui, resultNow());
+
+  if (keepFocus) {
+    const field = Array.from(splitRoot.querySelectorAll<HTMLInputElement>('input')).find((input) =>
+      input.dataset['splitChange'] === focused.dataset['splitChange']
+      && input.dataset['splitDraft'] === focused.dataset['splitDraft']
+      && input.dataset['id'] === focused.dataset['id']);
+    field?.focus({ preventScroll: true });
+  }
 }
 
 function commit(): void {
@@ -120,6 +139,7 @@ function addPerson(): void {
 }
 
 function removePerson(id: string): void {
+  if (data.people.length <= 1) return;
   data = {
     ...data,
     people: data.people.filter((p) => p.id !== id),
@@ -223,6 +243,7 @@ const clickActions: Record<string, (el: HTMLElement) => void> = {
     setSettings({ taxSplit: el.dataset['value'] === 'equal' ? 'equal' : 'itemized' });
   },
   async copy() {
+    if (data.people.length === 0) return;
     const text = buildSplitSummary(data.shopName, data.note, data.people, resultNow());
     try {
       await navigator.clipboard.writeText(text);
@@ -258,13 +279,34 @@ const changeActions: Record<string, (el: HTMLInputElement) => void> = {
   round(el) { setSettings({ roundUp: el.checked }); },
 };
 
+splitRoot.addEventListener('pointerdown', (event) => {
+  if (!event.isPrimary || event.button !== 0) return;
+  cancelAnimationFrame(pointerEndFrame);
+  activePointer = event.pointerId;
+});
+
+function finishPointer(event: PointerEvent): void {
+  if (event.pointerId !== activePointer) return;
+  // Let the browser dispatch the click and any default form action before replacing its target.
+  pointerEndFrame = requestAnimationFrame(() => {
+    activePointer = null;
+    if (renderPending) render();
+  });
+}
+
+window.addEventListener('pointerup', finishPointer, true);
+window.addEventListener('pointercancel', finishPointer, true);
+
 splitRoot.addEventListener('click', (event) => {
   const target = event.target;
   if (!(target instanceof Element)) return;
   const el = target.closest<HTMLElement>('[data-split-action]');
   if (!el) return;
   const handler = clickActions[el.dataset['splitAction'] ?? ''];
-  if (handler) void handler(el);
+  if (handler) {
+    activePointer = null;
+    void handler(el);
+  }
 });
 
 splitRoot.addEventListener('change', (event) => {
@@ -290,6 +332,7 @@ splitRoot.addEventListener('submit', (event) => {
   const target = event.target;
   if (!(target instanceof HTMLFormElement)) return;
   event.preventDefault();
+  activePointer = null;
   if (target.dataset['splitForm'] === 'person') addPerson();
   if (target.dataset['splitForm'] === 'item') saveItem();
 });

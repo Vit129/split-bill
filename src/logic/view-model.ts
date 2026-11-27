@@ -16,17 +16,6 @@ export function ownersFor(state: AppState): string[] {
   return ['shared', ...state.people.map((p) => p.id)];
 }
 
-// Extras whose owner is not a current person (for example a removed person) count as shared.
-function extrasFor(state: AppState, brandId: BrandId, owner: string): ExtraItem[] {
-  const data = state.brands[brandId];
-  const personIds = new Set(state.people.map((p) => p.id));
-  if (state.mode === 'table') return data.extras.filter((e) => e.owner === 'table');
-  if (owner === 'shared') {
-    return data.extras.filter((e) => e.owner === 'shared' || !personIds.has(e.owner));
-  }
-  return data.extras.filter((e) => e.owner === owner);
-}
-
 export interface PlateRow {
   id: string;
   color: string;
@@ -62,6 +51,11 @@ export function buildView(state: AppState, target: string): View {
   const brand = BRANDS[brandId];
   const data = state.brands[brandId];
   const discountSatang = data.discount * 100;
+  const allExtras = state.mode === 'table' ? data.extras.filter((e) => e.owner === 'table') : data.extras;
+  const personIds = new Set(state.people.map((p) => p.id));
+  // In person mode, table items and items from removed people count toward the shared pool.
+  const extrasFor = (owner: string): ExtraItem[] =>
+    allExtras.filter((e) => (personIds.has(e.owner) ? e.owner : 'shared') === owner);
   const plateRowsFor = (counts: Record<string, number>): PlateRow[] =>
     brand.plates.map((p) => ({ ...p, count: counts[p.id] ?? 0 }));
   const base = {
@@ -75,14 +69,15 @@ export function buildView(state: AppState, target: string): View {
     people: state.people,
     target,
     plateRows: plateRowsFor(data.plates[target] ?? {}),
-    extras: extrasFor(state, brandId, target),
+    extras: state.mode === 'table' ? allExtras : extrasFor(target),
+    extraQty: sum(allExtras.map((e) => e.qty)),
+    allExtras,
   };
 
   if (state.mode === 'table') {
     const counts = data.plates['table'] ?? {};
-    const extras = extrasFor(state, brandId, 'table');
     const bill = computeBill({
-      grossSatang: plateSatang(brand, counts) + extrasSatang(extras),
+      grossSatang: plateSatang(brand, counts) + extrasSatang(allExtras),
       discountSatang,
       taxType: brand.taxType,
       serviceCharge: data.sc,
@@ -91,23 +86,20 @@ export function buildView(state: AppState, target: string): View {
       ...base,
       bill,
       plateTotal: plateCount(brand, counts),
-      extraQty: sum(extras.map((e) => e.qty)),
       allPlates: plateRowsFor(counts),
-      allExtras: extras,
       equalShares: computeEqualShares(bill.grandSatang, state.people),
       shares: [],
     };
   }
 
-  const sharedExtras = extrasFor(state, brandId, 'shared');
-  const sharedSatang = plateSatang(brand, data.plates['shared'] ?? {}) + extrasSatang(sharedExtras);
+  const sharedSatang = plateSatang(brand, data.plates['shared'] ?? {}) + extrasSatang(extrasFor('shared'));
   const people = state.people.map((p) => {
     const counts = data.plates[p.id] ?? {};
     return {
       id: p.id,
       name: p.name,
       plateCount: plateCount(brand, counts),
-      personalSatang: plateSatang(brand, counts) + extrasSatang(extrasFor(state, brandId, p.id)),
+      personalSatang: plateSatang(brand, counts) + extrasSatang(extrasFor(p.id)),
     };
   });
   const { bill, shares } = computePersonShares({
@@ -119,7 +111,6 @@ export function buildView(state: AppState, target: string): View {
     equalTaxSplit: state.equalTaxSplit,
   });
   const allCounts = [data.plates['shared'] ?? {}, ...state.people.map((p) => data.plates[p.id] ?? {})];
-  const allExtras = data.extras.filter((e) => e.owner !== 'table');
   const allPlates = brand.plates.map((p) => ({
     ...p,
     count: sum(allCounts.map((c) => c[p.id] ?? 0)),
@@ -128,9 +119,7 @@ export function buildView(state: AppState, target: string): View {
     ...base,
     bill: bill ?? computeBill({ grossSatang: 0, discountSatang: 0, taxType: brand.taxType, serviceCharge: data.sc }),
     plateTotal: sum(allCounts.map((c) => plateCount(brand, c))),
-    extraQty: sum(allExtras.map((e) => e.qty)),
     allPlates,
-    allExtras,
     equalShares: [],
     shares,
   };

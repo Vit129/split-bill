@@ -84,7 +84,8 @@ function peopleCard(data: SplitData, ui: SplitUi): string {
       <input class="input input-name" type="text" maxlength="24" value="${esc(p.name)}"
         aria-label="${esc(txt('BILL_PEOPLE'))}" data-split-change="rename" data-id="${esc(p.id)}">
       <button type="button" class="icon-btn" data-split-action="remove-person" data-id="${esc(p.id)}"
-        aria-label="${esc(txt('BILL_REMOVE_PERSON'))}">✕</button>
+        aria-label="${esc(txt('BILL_REMOVE_PERSON'))}"
+        ${data.people.length === 1 ? `disabled title="${esc(STRINGS.ERR_LAST_PERSON)}"` : ''}>✕</button>
     </div>`).join('');
   return `<section class="card">
     <div class="row-between">
@@ -225,6 +226,7 @@ function personCard(p: PersonResult, data: SplitData, ui: SplitUi): string {
 }
 
 function summaryCard(data: SplitData, ui: SplitUi, result: SplitResult): string {
+  const hasPeople = data.people.length > 0;
   const persons = result.persons.map((p) => personCard(p, data, ui)).join('');
   const paidCount = data.people.filter((p) => p.paid).length;
   const sum = result.persons.reduce((a, p) => a + p.totalSatang, 0);
@@ -246,11 +248,11 @@ function summaryCard(data: SplitData, ui: SplitUi, result: SplitResult): string 
       <div><dt>${esc(txt('BILL_VAT_TOTAL'))}</dt><dd>${baht(result.vatSatang)}</dd></div>
       ${result.discountSatang > 0 ? `<div class="good"><dt>${esc(txt('BILL_DISCOUNT_TOTAL'))}</dt><dd>-${baht(result.discountSatang)}</dd></div>` : ''}
     </dl>
-    ${result.unassigned > 0 ? `<p class="level-warn small">${esc(fnStr('BILL_UNASSIGNED_NOTE')(result.unassigned))}</p>` : ''}
-    <p class="muted small">${esc(check)}</p>
+    ${hasPeople && result.unassigned > 0 ? `<p class="level-warn small">${esc(fnStr('BILL_UNASSIGNED_NOTE')(result.unassigned))}</p>` : ''}
+    ${hasPeople ? `<p class="muted small">${esc(check)}</p>` : `<p class="level-warn small">${esc(STRINGS.ERR_LAST_PERSON)}</p>`}
     <p class="label">${esc(txt('BILL_PER_PERSON'))}</p>
     <div class="persons">${persons}</div>
-    <button type="button" class="btn btn-primary full" data-split-action="copy">${esc(txt('BILL_COPY'))}</button>
+    <button type="button" class="btn btn-primary full" data-split-action="copy" ${hasPeople ? '' : 'disabled'}>${esc(txt('BILL_COPY'))}</button>
   </section>`;
 }
 
